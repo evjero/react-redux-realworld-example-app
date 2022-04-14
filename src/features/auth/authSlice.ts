@@ -9,18 +9,17 @@ import {
 import agent, { User, UpdateUserRequest, ApiError } from '../../agent';
 import { StoreState } from '../../app/store';
 import {
-  failureReducer,
   isApiError,
   loadingReducer,
   Status,
+  StatusType,
 } from '../../common/utils';
 
-export type AuthState = {
-  status: Status;
+export interface AuthState extends ApiError {
+  status: StatusType;
   token?: string;
   user?: User;
-  errors?: Record<string, string[]>;
-};
+}
 
 type RegistrationRequest = {
   password: string;
@@ -33,15 +32,12 @@ type LoginRequest = {
 /**
  * Send a register request
  */
-export const register = createAsyncThunk(
+export const register = createAsyncThunk<User, RegistrationRequest>(
   'auth/register',
   async ({ username, email, password }: RegistrationRequest, thunkApi) => {
     try {
-      const {
-        user: { token, ...user },
-      } = await agent.Auth.register(username, email, password);
-
-      return { token, user };
+      const { user } = await agent.Auth.register(username, email, password);
+      return user;
     } catch (error) {
       if (isApiError(error)) {
         return thunkApi.rejectWithValue(error);
@@ -58,15 +54,13 @@ export const register = createAsyncThunk(
 /**
  * Send a login request
  */
-export const login = createAsyncThunk(
+export const login = createAsyncThunk<User, LoginRequest>(
   'auth/login',
   async ({ email, password }: LoginRequest, thunkApi) => {
     try {
-      const {
-        user: { token, ...user },
-      } = await agent.Auth.login(email, password);
+      const { user } = await agent.Auth.login(email, password);
 
-      return { token, user };
+      return user;
     } catch (error) {
       if (isApiError(error)) {
         return thunkApi.rejectWithValue(error);
@@ -84,14 +78,12 @@ export const login = createAsyncThunk(
 /**
  * Send a get current user request
  */
-export const getUser = createAsyncThunk(
+export const getUser = createAsyncThunk<User>(
   'auth/getUser',
   async () => {
-    const {
-      user: { token, ...user },
-    } = await agent.Auth.current();
+    const { user } = await agent.Auth.current();
 
-    return { token, user };
+    return user;
   },
   {
     //@ts-ignore
@@ -102,18 +94,22 @@ export const getUser = createAsyncThunk(
 /**
  * Send a update user request
  */
-export const updateUser = createAsyncThunk(
+export const updateUser = createAsyncThunk<User, UpdateUserRequest>(
   'auth/updateUser',
   async (
     { email, username, bio, image, password }: UpdateUserRequest,
     thunkApi
   ) => {
     try {
-      const {
-        user: { token, ...user },
-      } = await agent.Auth.save({ email, username, bio, image, password });
+      const { user } = await agent.Auth.save({
+        email,
+        username,
+        bio,
+        image,
+        password,
+      });
 
-      return { token, user };
+      return user;
     } catch (error) {
       if (isApiError(error)) {
         return thunkApi.rejectWithValue(error);
@@ -129,22 +125,26 @@ export const updateUser = createAsyncThunk(
   }
 );
 
-/**
- * @type {AuthState}
- */
-const initialState = {
+const initialState: AuthState = {
   status: Status.IDLE,
 };
 
-/**
- * @param {import('@reduxjs/toolkit').Draft<AuthState>} state
- * @param {import('@reduxjs/toolkit').PayloadAction<{token: string, user: User}>} action
- */
-function successReducer(state: Draft<AuthState>, action: PayloadAction<any>) {
+function successReducer(
+  state: Draft<AuthState>,
+  action: PayloadAction<User>
+): void {
   state.status = Status.SUCCESS;
   state.token = action.payload.token;
-  state.user = action.payload.user;
+  state.user = action.payload;
   delete state.errors;
+}
+
+export function failureReducer(
+  state: Draft<AuthState>,
+  action: PayloadAction<any> //ApiError
+): void {
+  state.status = Status.FAILURE;
+  state.errors = action.payload.errors;
 }
 
 const authSlice = createSlice({

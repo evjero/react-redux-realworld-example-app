@@ -1,3 +1,5 @@
+import { EntityId } from '@reduxjs/toolkit';
+
 const API_ROOT =
   process.env.REACT_APP_BACKEND_URL ?? 'https://conduit.productionready.io/api';
 
@@ -23,11 +25,7 @@ function serialize(object: Record<string, unknown>) {
 
 let token: string | undefined = undefined;
 
-export type ApiError = {
-  errors: {
-    [key: string]: string[];
-  };
-};
+export type ApiError = { errors?: Record<string, string[]> };
 export type User = {
   email: string;
   username: string;
@@ -135,7 +133,14 @@ export type QueryParams = {
   author?: string;
   tag?: string;
   favorited?: String;
+  username?: string;
   [key: string]: unknown;
+};
+
+export type Meta<T = unknown> = {
+  arg: T;
+  requestId: EntityId;
+  requestStatus: 'fulfilled' | 'rejected' | 'rejectWithValue';
 };
 
 const requests = {
@@ -248,7 +253,7 @@ const Articles = {
    *
    * @param slug Article's slug
    */
-  favorite: (slug: string): Promise<ArticlesResponse> =>
+  favorite: (slug: string): Promise<ArticleResponse> =>
     requests.post(`/articles/${slug}/favorite`),
   /**
    * Get article favorited by author
@@ -301,15 +306,13 @@ const Comments = {
    *
    * @param slug Article's slug
    * @param commentId Comment's id
-   * @returns {Promise<{}>}
    */
-  delete: (slug: string, commentId: string): Promise<void> =>
+  delete: (slug: string, commentId: number): Promise<void> =>
     requests.del(`/articles/${slug}/comments/${commentId}`),
   /**
    * Get all comments for one article
    *
    * @param slug Article's slug
-   * @returns {Promise<CommentsResponse>}
    */
   forArticle: (slug: string): Promise<CommentsResponse> =>
     requests.get(`/articles/${slug}/comments`),

@@ -12,23 +12,32 @@ import {
   setToken,
   updateUser,
 } from '../features/auth/authSlice';
+import { ThunkActionDispatch } from 'redux-thunk';
 
 export const deleteArticle = createAsyncThunk(
   'common/deleteArticle',
   agent.Articles.del
 );
 
-export const appLoad = (token) => (dispatch) => {
-  dispatch(commonSlice.actions.loadApp());
+export const appLoad =
+  (token: string) => (dispatch: ThunkActionDispatch<any>) => {
+    dispatch(commonSlice.actions.loadApp());
 
-  if (token) {
-    agent.setToken(token);
-    dispatch(setToken(token));
-    return dispatch(getUser());
-  }
+    if (token) {
+      agent.setToken(token);
+      dispatch(setToken(token));
+      return dispatch(getUser());
+    }
+  };
+
+type CommonState = {
+  appName: string;
+  appLoaded: boolean;
+  viewChangeCounter: number;
+  redirectTo?: string;
 };
 
-const initialState = {
+const initialState: CommonState = {
   appName: 'Conduit',
   appLoaded: false,
   viewChangeCounter: 0,

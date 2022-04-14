@@ -1,25 +1,40 @@
 import {
+  AnyAction,
   createAsyncThunk,
   createEntityAdapter,
   createSelector,
   createSlice,
+  Dictionary,
+  EntityId,
+  PayloadAction,
 } from '@reduxjs/toolkit';
 
-import agent from '../../agent';
-import { isApiError, loadingReducer, Status } from '../../common/utils';
+import agent, { ApiError, Meta } from '../../agent';
+import {
+  isApiError,
+  loadingReducer,
+  Status,
+  StatusType,
+} from '../../common/utils';
 import { selectIsAuthenticated, selectUser } from '../auth/authSlice';
+import type { Comment } from '../../agent';
+import { StoreState } from '../../app/store';
 
-/**
- * @typedef  {object}   CommentsState
- * @property {Status}   status
- * @property {number[]} ids
- * @property {Record<string, import('../../agent').Comment>} entities
- * @property {Record<string, string[]>} errors
- */
+export interface CommentsState extends ApiError {
+  status: StatusType;
+  ids: EntityId[];
+  entities: Dictionary<Comment>;
+}
 
 const commentAdapter = createEntityAdapter({
-  sortComparer: (a, b) => b.createdAt.localeCompare(a.createdAt),
+  sortComparer: (a: Comment, b: Comment) =>
+    b.createdAt.localeCompare(a.createdAt),
 });
+
+type CreateCommentRequest = {
+  articleSlug: string;
+  comment: Partial<Comment>;
+};
 
 /**
  * Send a create request
@@ -31,12 +46,15 @@ const commentAdapter = createEntityAdapter({
  */
 export const createComment = createAsyncThunk(
   'comments/createComment',
-  async ({ articleSlug, comment: newComment }, thunkApi) => {
+  async (
+    { articleSlug, comment: newComment }: CreateCommentRequest,
+    thunkApi
+  ) => {
     try {
       const { comment } = await agent.Comments.create(articleSlug, newComment);
 
       return comment;
-    } catch (error) {
+    } catch (error: any) {
       if (isApiError(error)) {
         return thunkApi.rejectWithValue(error);
       }
@@ -46,7 +64,9 @@ export const createComment = createAsyncThunk(
   },
   {
     condition: (_, { getState }) =>
+      //@ts-ignore
       selectIsAuthenticated(getState()) && !selectIsLoading(getState()),
+    //@ts-ignore
     getPendingMeta: (_, { getState }) => ({ author: selectUser(getState()) }),
   }
 );
@@ -58,40 +78,42 @@ export const createComment = createAsyncThunk(
  */
 export const getCommentsForArticle = createAsyncThunk(
   'comments/getCommentsForArticle',
-  async (articleSlug) => {
+  async (articleSlug: string) => {
     const { comments } = await agent.Comments.forArticle(articleSlug);
 
     return comments;
   },
   {
+    //@ts-ignore
     condition: (_, { getState }) => !selectIsLoading(getState()),
   }
 );
 
+type RemoveCommentRequest = {
+  articleSlug: string;
+  commentId: number;
+};
+
 /**
  * Send a remove request
- *
- * @param {object} argument
- * @param {string} argument.articleSlug
- * @param {number} argument.commentId
  */
 export const removeComment = createAsyncThunk(
   'comments/removeComment',
-  async ({ articleSlug, commentId }) => {
+  async ({ articleSlug, commentId }: RemoveCommentRequest) => {
     await agent.Comments.delete(articleSlug, commentId);
   },
   {
     condition: ({ commentId }, { getState }) =>
+      //@ts-ignore
       selectIsAuthenticated(getState()) &&
+      //@ts-ignore
       selectCommentsSlice(getState()).ids.includes(commentId) &&
+      //@ts-ignore
       !selectIsLoading(getState()),
   }
 );
 
-/**
- * @type {CommentsState}
- */
-const initialState = commentAdapter.getInitialState({
+const initialState: CommentsState = commentAdapter.getInitialState({
   status: Status.IDLE,
 });
 
@@ -100,8 +122,9 @@ const commentsSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers(builder) {
-    builder
-      .addCase(createComment.pending, (state, action) => {
+    builder.addCase(
+      createComment.pending,
+      (state: CommentsState, action: PayloadAction<void, string, any>) => {
         state.status = Status.LOADING;
 
         if (action.meta.arg.comment.body) {
@@ -113,33 +136,54 @@ const commentsSlice = createSlice({
             updatedAt: new Date().toISOString(),
           });
         }
-      })
-      .addCase(createComment.fulfilled, (state, action) => {
+      }
+    );
+
+    builder.addCase(
+      createComment.fulfilled,
+      (
+        state: CommentsState,
+        action: PayloadAction<Partial<Comment>, string, Meta>
+      ) => {
         state.status = Status.SUCCESS;
         commentAdapter.updateOne(state, {
           id: action.meta.requestId,
           changes: action.payload,
         });
         delete state.errors;
-      })
-      .addCase(createComment.rejected, (state, action) => {
+      }
+    );
+
+    builder.addCase(
+      createComment.rejected,
+      (state: CommentsState, action: PayloadAction<any, string, Meta>) => {
         state.status = Status.FAILURE;
-        state.errors = action.payload?.errors;
+        state.errors = action.payload.errors;
         commentAdapter.removeOne(state, action.meta.requestId);
-      });
+      }
+    );
 
-    builder.addCase(getCommentsForArticle.fulfilled, (state, action) => {
-      state.status = Status.SUCCESS;
-      commentAdapter.setAll(state, action.payload);
-    });
+    builder.addCase(
+      getCommentsForArticle.fulfilled,
+      (state: CommentsState, action: PayloadAction<Comment[]>) => {
+        state.status = Status.SUCCESS;
+        commentAdapter.setAll(state, action.payload);
+      }
+    );
 
-    builder.addCase(removeComment.fulfilled, (state, action) => {
-      state.status = Status.SUCCESS;
-      commentAdapter.removeOne(state, action.meta.arg.commentId);
-    });
+    builder.addCase(
+      removeComment.fulfilled,
+      (
+        state: CommentsState,
+        action: PayloadAction<void, string, Meta<RemoveCommentRequest>>
+      ) => {
+        state.status = Status.SUCCESS;
+        commentAdapter.removeOne(state, action.meta.arg.commentId);
+      }
+    );
 
     builder.addMatcher(
-      (action) => /comments\/.*\/pending/.test(action.type),
+      (action: AnyAction) => /comments\/.*\/pending/.test(action.type),
       loadingReducer
     );
   },
@@ -151,7 +195,7 @@ const commentsSlice = createSlice({
  * @param {object} state
  * @returns {CommentsState}
  */
-const selectCommentsSlice = (state) => state.comments;
+const selectCommentsSlice = (state: StoreState) => state.comments;
 
 const commentSelectors = commentAdapter.getSelectors(selectCommentsSlice);
 
@@ -165,20 +209,16 @@ export const selectAllComments = commentSelectors.selectAll;
 
 /**
  * Get one comment
- *
- * @param {number} commentId
  * @returns {import('@reduxjs/toolkit').Selector<object, import('../../agent').Comment>}
  */
-const selectCommentById = (commentId) => (state) =>
+const selectCommentById = (commentId: number) => (state: StoreState) =>
   commentSelectors.selectById(state, commentId);
 
 /**
  * Get is the comment's author
- *
- * @param {number} commentId
  * @returns {import('@reduxjs/toolkit').Selector<object, boolean>}
  */
-export const selectIsAuthor = (commentId) =>
+export const selectIsAuthor = (commentId: number) =>
   createSelector(
     selectCommentById(commentId),
     selectUser,
@@ -191,7 +231,7 @@ export const selectIsAuthor = (commentId) =>
  * @param {object} state
  * @returns {boolean}
  */
-export const selectIsLoading = (state) =>
+export const selectIsLoading = (state: StoreState) =>
   selectCommentsSlice(state).status === Status.LOADING;
 
 /**
@@ -200,6 +240,7 @@ export const selectIsLoading = (state) =>
  * @param {object} state
  * @returns {Record<string, string[]>}
  */
-export const selectErrors = (state) => selectCommentsSlice(state).errors;
+export const selectErrors = (state: StoreState) =>
+  selectCommentsSlice(state).errors;
 
 export default commentsSlice.reducer;

@@ -1,6 +1,11 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
+import {
+  createSlice,
+  createAsyncThunk,
+  PayloadAction,
+  Draft,
+} from '@reduxjs/toolkit';
 
-import agent from '../agent';
+import agent, { ApiError, Article, ArticleResponse } from '../agent';
 
 function serializeError(error: any) {
   if (error instanceof Error) {
@@ -36,13 +41,12 @@ export const updateArticle = createAsyncThunk(
   { serializeError }
 );
 
-type ArticleSliceState = {
-  article?: Record<string, any>;
+interface ArticleSliceState extends ApiError {
+  article?: Article;
   inProgress: boolean;
-  errors?: any[];
-};
+}
 
-const initialState = {
+const initialState: ArticleSliceState = {
   article: undefined,
   inProgress: false,
   errors: undefined,
@@ -57,31 +61,40 @@ const articleSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(
       getArticle.fulfilled,
-      (state: ArticleSliceState, action) => {
+      (
+        state: Draft<ArticleSliceState>,
+        action: PayloadAction<ArticleResponse>
+      ) => {
         state.article = action.payload.article;
         state.inProgress = false;
       }
     );
 
-    builder.addCase(createArticle.fulfilled, (state: ArticleSliceState) => {
-      state.inProgress = false;
-    });
+    builder.addCase(
+      createArticle.fulfilled,
+      (state: Draft<ArticleSliceState>) => {
+        state.inProgress = false;
+      }
+    );
 
     builder.addCase(
       createArticle.rejected,
-      (state: ArticleSliceState, action) => {
+      (state: Draft<ArticleSliceState>, action) => {
         state.errors = (action.error as any).errors;
         state.inProgress = false;
       }
     );
 
-    builder.addCase(updateArticle.fulfilled, (state: ArticleSliceState) => {
-      state.inProgress = false;
-    });
+    builder.addCase(
+      updateArticle.fulfilled,
+      (state: Draft<ArticleSliceState>) => {
+        state.inProgress = false;
+      }
+    );
 
     builder.addCase(
       updateArticle.rejected,
-      (state: ArticleSliceState, action) => {
+      (state: Draft<ArticleSliceState>, action) => {
         state.errors = (action.error as any).errors;
         state.inProgress = false;
       }
@@ -89,12 +102,12 @@ const articleSlice = createSlice({
 
     builder.addMatcher(
       (action) => action.type.endsWith('/pending'),
-      (state: ArticleSliceState) => {
+      (state: Draft<ArticleSliceState>) => {
         state.inProgress = true;
       }
     );
 
-    builder.addDefaultCase((state) => {
+    builder.addDefaultCase((state: Draft<ArticleSliceState>) => {
       state.inProgress = false;
     });
   },

@@ -1,6 +1,12 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import {
+  createAsyncThunk,
+  createSlice,
+  Draft,
+  PayloadAction,
+} from '@reduxjs/toolkit';
 
-import agent from '../agent';
+import agent, { Profile, ProfileResponse } from '../agent';
+import { Status, StatusType } from '../common/utils';
 
 export const getProfile = createAsyncThunk(
   'profile/getProfile',
@@ -14,14 +20,32 @@ export const unfollow = createAsyncThunk(
   agent.Profile.unfollow
 );
 
+type ProfileState = {
+  status: StatusType;
+} & Partial<Profile>;
+
 const profileSlice = createSlice({
   name: 'profile',
-  initialState: {},
+  initialState: {
+    status: Status.IDLE,
+  },
   reducers: {
-    profilePageUnloaded: () => ({}),
+    profilePageUnloaded: (state: Draft<ProfileState>) => {
+      delete state.username;
+      delete state.bio;
+      delete state.following;
+      delete state.image;
+      return {
+        status: Status.IDLE,
+      };
+    },
   },
   extraReducers: (builder) => {
-    const successCaseReducer = (_, action) => ({
+    const successCaseReducer = (
+      state: ProfileState,
+      action: PayloadAction<ProfileResponse>
+    ) => ({
+      status: Status.SUCCESS,
       ...action.payload.profile,
     });
 

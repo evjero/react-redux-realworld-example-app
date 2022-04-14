@@ -1,13 +1,18 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import {
+  createAsyncThunk,
+  createSlice,
+  Draft,
+  PayloadAction,
+} from '@reduxjs/toolkit';
 
 import agent from '../../agent';
-import { Status } from '../../common/utils';
+import { StoreState } from '../../app/store';
+import { Status, StatusType } from '../../common/utils';
 
-/**
- * @typedef {object}    TagsState
- * @property {Status}   status
- * @property {string[]} tags
- */
+export type TagsState = {
+  status: StatusType;
+  tags: string[];
+};
 
 /**
  * Fetch all tags
@@ -20,10 +25,8 @@ export const getAllTags = createAsyncThunk('tags/getAllTags', async () => {
 
 /**
  * Tags state
- *
- * @type {TagsState}
  */
-const initialState = {
+const initialState: TagsState = {
   status: Status.IDLE,
   tags: [],
 };
@@ -34,10 +37,10 @@ const tagsSlice = createSlice({
   reducers: {},
   extraReducers(builder) {
     builder
-      .addCase(getAllTags.pending, (state) => {
+      .addCase(getAllTags.pending, (state: Draft<TagsState>) => {
         state.status = Status.LOADING;
       })
-      .addCase(getAllTags.fulfilled, (_, action) => ({
+      .addCase(getAllTags.fulfilled, (_, action: PayloadAction<string[]>) => ({
         status: Status.SUCCESS,
         tags: action.payload,
       }));
@@ -50,7 +53,7 @@ const tagsSlice = createSlice({
  * @param {object} state
  * @returns {TagsState}
  */
-const selectTagsState = (state) => state.tags;
+const selectTagsState = (state: StoreState) => state.tags;
 
 /**
  * Get tags from state
@@ -58,7 +61,7 @@ const selectTagsState = (state) => state.tags;
  * @param {object} state
  * @returns {string[]}
  */
-export const selectTags = (state) => selectTagsState(state).tags;
+export const selectTags = (state: StoreState) => selectTagsState(state).tags;
 
 /**
  * Is loading
@@ -66,7 +69,7 @@ export const selectTags = (state) => selectTagsState(state).tags;
  * @param {object} state
  * @returns {boolean}
  */
-export const selectIsLoading = (state) =>
+export const selectIsLoading = (state: StoreState) =>
   selectTagsState(state).status === Status.LOADING;
 
 export default tagsSlice.reducer;
