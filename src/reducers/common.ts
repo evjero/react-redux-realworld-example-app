@@ -21,7 +21,7 @@ export const deleteArticle = createAsyncThunk<void, string, AsyncThunkOptions>(
 );
 
 export const appLoad =
-  (token: string) => (dispatch: ThunkActionDispatch<any>) => {
+  (token: string | null) => (dispatch: ThunkActionDispatch<any>) => {
     dispatch(commonSlice.actions.loadApp());
 
     if (token) {

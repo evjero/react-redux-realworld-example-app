@@ -50,7 +50,7 @@ function App(): JSX.Element {
 
   useEffect(() => {
     const token = window.localStorage.getItem('jwt');
-    token && useAppDispatch(appLoad(token));
+    useAppDispatch(appLoad(token));
   }, []);
 
   if (appLoaded) {
