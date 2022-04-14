@@ -7,10 +7,9 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import App from './components/App';
 import store from './app/store';
 
-// const _history = createBrowserHistory()
-//eslint-disable-next-line
-//@ts-ignore
-createRoot(document.getElementById('root')).render(
+createRoot(
+  document.getElementById('root') ?? document.getElementsByName('body')[0]
+).render(
   <React.StrictMode>
     <Provider store={store}>
       <Router>

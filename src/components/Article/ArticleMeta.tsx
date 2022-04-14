@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
+import { RootState } from '../../app/store';
 import { selectUser } from '../../features/auth/authSlice';
 
 import ArticleActions from './ArticleActions';
@@ -13,7 +14,7 @@ import ArticleActions from './ArticleActions';
  */
 function ArticleMeta() {
   const currentUser = useSelector(selectUser);
-  const article = useSelector((state) => state.article.article);
+  const article = useSelector((state: RootState) => state.article.article);
   const isAuthor = currentUser?.username === article?.author.username;
 
   if (!article) return null;

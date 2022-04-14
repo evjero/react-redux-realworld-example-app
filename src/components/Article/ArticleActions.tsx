@@ -10,16 +10,13 @@ import { deleteArticle } from '../../reducers/common';
  * @example
  * <ArticleActions />
  */
-function ArticleActions() {
+function ArticleActions(): JSX.Element {
   const { slug } = useParams();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  /**
-   * @type {React.MouseEventHandler}
-   */
-  const removeArticle = () => {
-    dispatch(deleteArticle(slug));
+  const removeArticle: React.MouseEventHandler = () => {
+    slug && dispatch(deleteArticle(slug));
     navigate('/');
   };
 

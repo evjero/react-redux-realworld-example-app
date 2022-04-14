@@ -7,35 +7,46 @@ import xss from 'xss';
 import TagsList from '../../features/tags/TagsList';
 import { articlePageUnloaded, getArticle } from '../../reducers/article';
 import ArticleMeta from './ArticleMeta';
+import { RootState, useAppDispatch } from '../../app/store';
 
-const CommentSection = lazy(() =>
-  import(
-    /* webpackChunkName: "CommentSection", webpackPrefetch: true  */ '../../features/comments/CommentSection'
-  )
+const CommentSection = lazy(
+  () =>
+    import(
+      /* webpackChunkName: "CommentSection", webpackPrefetch: true  */ '../../features/comments/CommentSection'
+    )
 );
+
+type Props = { slug: string; [property: string]: unknown };
 
 /**
  * Show one article with its comments
  *
- * @param {import('react-router-dom').RouteComponentProps<{ slug: string }>} props
  * @example
  * <Article />
  */
-function Article({ match }) {
-  const dispatch = useDispatch();
-  const article = useSelector((state) => state.article.article);
-  const inProgress = useSelector((state) => state.article.inProgress);
+function Article({ match }: Props) {
+  const article = useSelector((state: RootState) => state.article.article);
+  const inProgress = useSelector(
+    (state: RootState) => state.article.inProgress
+  );
   const { slug } = useParams();
-  const renderMarkdown = () => ({ __html: xss(snarkdown(article.body)) });
+  const renderMarkdown = () =>
+    article ? { __html: xss(snarkdown(article.body)) } : undefined;
 
   useEffect(() => {
-    const fetchArticle = dispatch(getArticle(slug));
-    return () => {
-      fetchArticle.abort();
-    };
+    if (slug) {
+      const fetchArticle = useAppDispatch(getArticle(slug));
+      return () => {
+        fetchArticle.abort();
+      };
+    }
   }, [match]);
 
-  useEffect(() => () => dispatch(articlePageUnloaded()), []);
+  useEffect(() => {
+    return () => {
+      useAppDispatch(articlePageUnloaded());
+    };
+  }, []);
 
   if (!article) {
     return (

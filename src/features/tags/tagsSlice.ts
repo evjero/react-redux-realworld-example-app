@@ -6,8 +6,8 @@ import {
 } from '@reduxjs/toolkit';
 
 import agent from '../../agent';
-import { StoreState } from '../../app/store';
 import { Status, StatusType } from '../../common/utils';
+import type { AsyncThunkOptions, RootState } from '../../app/store';
 
 export type TagsState = {
   status: StatusType;
@@ -17,11 +17,14 @@ export type TagsState = {
 /**
  * Fetch all tags
  */
-export const getAllTags = createAsyncThunk('tags/getAllTags', async () => {
-  const { tags } = await agent.Tags.getAll();
+export const getAllTags = createAsyncThunk<string[], void, AsyncThunkOptions>(
+  'tags/getAllTags',
+  async () => {
+    const { tags } = await agent.Tags.getAll();
 
-  return tags;
-});
+    return tags;
+  }
+);
 
 /**
  * Tags state
@@ -37,7 +40,7 @@ const tagsSlice = createSlice({
   reducers: {},
   extraReducers(builder) {
     builder
-      .addCase(getAllTags.pending, (state: Draft<TagsState>) => {
+      .addCase(getAllTags.pending, (state) => {
         state.status = Status.LOADING;
       })
       .addCase(getAllTags.fulfilled, (_, action: PayloadAction<string[]>) => ({
@@ -53,7 +56,7 @@ const tagsSlice = createSlice({
  * @param {object} state
  * @returns {TagsState}
  */
-const selectTagsState = (state: StoreState) => state.tags;
+const selectTagsState = (state: RootState) => state.tags;
 
 /**
  * Get tags from state
@@ -61,7 +64,7 @@ const selectTagsState = (state: StoreState) => state.tags;
  * @param {object} state
  * @returns {string[]}
  */
-export const selectTags = (state: StoreState) => selectTagsState(state).tags;
+export const selectTags = (state: RootState) => selectTagsState(state).tags;
 
 /**
  * Is loading
@@ -69,7 +72,7 @@ export const selectTags = (state: StoreState) => selectTagsState(state).tags;
  * @param {object} state
  * @returns {boolean}
  */
-export const selectIsLoading = (state: StoreState) =>
+export const selectIsLoading = (state: RootState) =>
   selectTagsState(state).status === Status.LOADING;
 
 export default tagsSlice.reducer;

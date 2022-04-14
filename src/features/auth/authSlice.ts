@@ -7,13 +7,13 @@ import {
 } from '@reduxjs/toolkit';
 
 import agent, { User, UpdateUserRequest, ApiError } from '../../agent';
-import { StoreState } from '../../app/store';
 import {
   isApiError,
   loadingReducer,
   Status,
   StatusType,
 } from '../../common/utils';
+import type { RootState, AsyncThunkOptions } from '../../app/store';
 
 export interface AuthState extends ApiError {
   status: StatusType;
@@ -32,7 +32,11 @@ type LoginRequest = {
 /**
  * Send a register request
  */
-export const register = createAsyncThunk<User, RegistrationRequest>(
+export const register = createAsyncThunk<
+  User,
+  RegistrationRequest,
+  AsyncThunkOptions
+>(
   'auth/register',
   async ({ username, email, password }: RegistrationRequest, thunkApi) => {
     try {
@@ -47,14 +51,13 @@ export const register = createAsyncThunk<User, RegistrationRequest>(
     }
   },
   {
-    //@ts-ignore
     condition: (_, { getState }) => !selectIsLoading(getState()),
   }
 );
 /**
  * Send a login request
  */
-export const login = createAsyncThunk<User, LoginRequest>(
+export const login = createAsyncThunk<User, LoginRequest, AsyncThunkOptions>(
   'auth/login',
   async ({ email, password }: LoginRequest, thunkApi) => {
     try {
@@ -70,7 +73,6 @@ export const login = createAsyncThunk<User, LoginRequest>(
     }
   },
   {
-    //@ts-ignore
     condition: (_, { getState }) => !selectIsLoading(getState()),
   }
 );
@@ -78,7 +80,7 @@ export const login = createAsyncThunk<User, LoginRequest>(
 /**
  * Send a get current user request
  */
-export const getUser = createAsyncThunk<User>(
+export const getUser = createAsyncThunk<User, void, AsyncThunkOptions>(
   'auth/getUser',
   async () => {
     const { user } = await agent.Auth.current();
@@ -86,7 +88,6 @@ export const getUser = createAsyncThunk<User>(
     return user;
   },
   {
-    //@ts-ignore
     condition: (_, { getState }) => Boolean(selectAuthSlice(getState()).token),
   }
 );
@@ -94,7 +95,11 @@ export const getUser = createAsyncThunk<User>(
 /**
  * Send a update user request
  */
-export const updateUser = createAsyncThunk<User, UpdateUserRequest>(
+export const updateUser = createAsyncThunk<
+  User,
+  UpdateUserRequest,
+  AsyncThunkOptions
+>(
   'auth/updateUser',
   async (
     { email, username, bio, image, password }: UpdateUserRequest,
@@ -120,7 +125,6 @@ export const updateUser = createAsyncThunk<User, UpdateUserRequest>(
   },
   {
     condition: (_, { getState }) =>
-      //@ts-ignore
       selectIsAuthenticated(getState()) && !selectIsLoading(getState()),
   }
 );
@@ -158,7 +162,7 @@ const authSlice = createSlice({
     /**
      * Update token
      */
-    setToken(state: Draft<AuthState>, action: PayloadAction<string>) {
+    setToken(state, action: PayloadAction<string>) {
       state.token = action.payload;
     },
   },
@@ -186,17 +190,17 @@ export const { setToken, logout } = authSlice.actions;
 /**
  * Get auth slice
  */
-const selectAuthSlice = (state: StoreState): AuthState => state.auth;
+const selectAuthSlice = (state: RootState): AuthState => state.auth;
 
 /**
  * Get current user
  */
-export const selectUser = (state: StoreState) => selectAuthSlice(state).user;
+export const selectUser = (state: RootState) => selectAuthSlice(state).user;
 
 /**
  * Get errors
  */
-export const selectErrors = (state: StoreState): AuthState['errors'] =>
+export const selectErrors = (state: RootState): AuthState['errors'] =>
   selectAuthSlice(state).errors;
 
 /**
@@ -205,7 +209,7 @@ export const selectErrors = (state: StoreState): AuthState['errors'] =>
  * @param {object} state
  * @returns {boolean} There are pending effects
  */
-export const selectIsLoading = (state: StoreState) =>
+export const selectIsLoading = (state: RootState) =>
   selectAuthSlice(state).status === Status.LOADING;
 
 /**
@@ -215,7 +219,7 @@ export const selectIsLoading = (state: StoreState) =>
  * @returns {boolean}
  */
 export const selectIsAuthenticated = createSelector(
-  (state: StoreState) => selectAuthSlice(state).token,
+  (state: RootState) => selectAuthSlice(state).token,
   selectUser,
   (token, user) => Boolean(token && user)
 );

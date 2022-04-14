@@ -1,6 +1,6 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-import agent from '../agent';
+import agent, { ArticleResponse } from '../agent';
 import { articlePageUnloaded, createArticle, updateArticle } from './article';
 import { profilePageUnloaded } from './profile';
 import { homePageUnloaded } from './articleList';
@@ -13,8 +13,9 @@ import {
   updateUser,
 } from '../features/auth/authSlice';
 import { ThunkActionDispatch } from 'redux-thunk';
+import type { AsyncThunkOptions, RootState } from '../app/store';
 
-export const deleteArticle = createAsyncThunk(
+export const deleteArticle = createAsyncThunk<void, string, AsyncThunkOptions>(
   'common/deleteArticle',
   agent.Articles.del
 );
@@ -56,45 +57,45 @@ const commonSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(deleteArticle.fulfilled, (state) => {
-      state.redirectTo = '/';
-    });
-
-    builder.addCase(updateUser.fulfilled, (state, action) => {
-      state.redirectTo = '/';
-    });
-
-    builder.addCase(login.fulfilled, (state, action) => {
-      state.redirectTo = '/';
-    });
-
-    builder.addCase(register.fulfilled, (state, action) => {
-      state.redirectTo = '/';
-    });
-
-    builder.addCase(logout, (state) => {
-      state.redirectTo = '/';
-    });
-
-    builder.addCase(createArticle.fulfilled, (state, action) => {
-      state.redirectTo = `/article/${action.payload.article.slug}`;
-    });
-
-    builder.addCase(updateArticle.fulfilled, (state, action) => {
-      state.redirectTo = `/article/${action.payload.article.slug}`;
-    });
-
-    builder.addMatcher(
-      (action) =>
-        [
-          articlePageUnloaded.type,
-          homePageUnloaded.type,
-          profilePageUnloaded.type,
-        ].includes(action.type),
-      (state) => {
-        state.viewChangeCounter++;
-      }
-    );
+    builder
+      .addCase(deleteArticle.fulfilled, (state) => {
+        state.redirectTo = '/';
+      })
+      .addCase(updateUser.fulfilled, (state) => {
+        state.redirectTo = '/';
+      })
+      .addCase(login.fulfilled, (state) => {
+        state.redirectTo = '/';
+      })
+      .addCase(register.fulfilled, (state) => {
+        state.redirectTo = '/';
+      })
+      .addCase(logout, (state) => {
+        state.redirectTo = '/';
+      })
+      .addCase(
+        createArticle.fulfilled,
+        (state, action: PayloadAction<ArticleResponse>) => {
+          state.redirectTo = `/article/${action.payload.article.slug}`;
+        }
+      )
+      .addCase(
+        updateArticle.fulfilled,
+        (state, action: PayloadAction<ArticleResponse>) => {
+          state.redirectTo = `/article/${action.payload.article.slug}`;
+        }
+      )
+      .addMatcher(
+        (action) =>
+          [
+            articlePageUnloaded.type,
+            homePageUnloaded.type,
+            profilePageUnloaded.type,
+          ].includes(action.type),
+        (state) => {
+          state.viewChangeCounter++;
+        }
+      );
   },
 });
 

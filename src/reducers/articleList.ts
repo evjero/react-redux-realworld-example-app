@@ -13,12 +13,12 @@ import agent, {
   Meta,
   QueryParams,
 } from '../agent';
-import { AppStore } from '../app/store';
+import type { AsyncThunkOptions, RootState } from '../app/store';
 import { profilePageUnloaded } from './profile';
 
 export const changeTab = (tab: any) => (dispatch: ThunkActionDispatch<any>) => {
   dispatch(articleListSlice.actions.changeTab(tab));
-  return dispatch(getAllArticles());
+  return dispatch(getAllArticles({}));
 };
 
 type ArticlesByAuthorRequest = {
@@ -32,41 +32,49 @@ export const getArticlesByAuthor = createAsyncThunk(
     agent.Articles.byAuthor(author, page)
 );
 
-export const getAllArticles = createAsyncThunk(
-  'articleList/getAll',
-  ({ page, author, tag, favorited }: QueryParams = {}, thunkApi: any) =>
-    thunkApi.getState().articleList.tab === 'feed'
-      ? agent.Articles.feed(page ?? 0)
-      : agent.Articles.all({
-          page: page ?? thunkApi.getState().articleList.currentPage,
-          author: author ?? thunkApi.getState().articleList.author,
-          tag: tag ?? thunkApi.getState().articleList.tag,
-          favorited: favorited ?? thunkApi.getState().articleList.favorited,
-          limit: thunkApi.getState().articleList.articlesPerPage ?? 10,
-        })
+export const getAllArticles = createAsyncThunk<
+  ArticlesResponse,
+  QueryParams,
+  AsyncThunkOptions
+>('articleList/getAll', ({ page, author, tag, favorited }, thunkApi: any) =>
+  thunkApi.getState().articleList.tab === 'feed'
+    ? agent.Articles.feed(page ?? 0)
+    : agent.Articles.all({
+        page: page ?? thunkApi.getState().articleList.currentPage,
+        author: author ?? thunkApi.getState().articleList.author,
+        tag: tag ?? thunkApi.getState().articleList.tag,
+        favorited: favorited ?? thunkApi.getState().articleList.favorited,
+        limit: thunkApi.getState().articleList.articlesPerPage ?? 10,
+      })
 );
 
-export const getArticlesByTag = createAsyncThunk(
-  'articleList/getArticlesByTag',
-  ({ tag, page }: QueryParams = {}) =>
-    agent.Articles.byTag(tag ?? '', page ?? 0)
+export const getArticlesByTag = createAsyncThunk<
+  ArticlesResponse,
+  QueryParams,
+  AsyncThunkOptions
+>('articleList/getArticlesByTag', ({ tag, page }) =>
+  agent.Articles.byTag(tag ?? '', page ?? 0)
 );
 
-export const getFavoriteArticles = createAsyncThunk(
-  'articleList/getFavoriteArticles',
-  ({ username, page }: Partial<{ username: string; page: number }> = {}) =>
-    agent.Articles.favoritedBy(username ?? '', page ?? 0)
+export const getFavoriteArticles = createAsyncThunk<
+  ArticlesResponse,
+  Partial<{ username: string; page: number }>,
+  AsyncThunkOptions
+>('articleList/getFavoriteArticles', ({ username, page }) =>
+  agent.Articles.favoritedBy(username ?? '', page ?? 0)
 );
 
-export const favoriteArticle = createAsyncThunk(
-  'articleList/favoriteArticle',
-  agent.Articles.favorite
-);
+export const favoriteArticle = createAsyncThunk<
+  ArticleResponse,
+  string,
+  AsyncThunkOptions
+>('articleList/favoriteArticle', agent.Articles.favorite);
 
-export const unfavoriteArticle = createAsyncThunk(
-  'articleList/unfavoriteArticle',
-  agent.Articles.unfavorite
-);
+export const unfavoriteArticle = createAsyncThunk<
+  ArticleResponse,
+  string,
+  AsyncThunkOptions
+>('articleList/unfavoriteArticle', agent.Articles.unfavorite);
 
 type ArticleListState = {
   articles: Article[];
@@ -101,116 +109,105 @@ const articleListSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(
-      favoriteArticle.fulfilled,
-      (
-        state: Draft<ArticleListState>,
-        action: PayloadAction<ArticleResponse>
-      ) => {
-        state.articles = state.articles.map((article) =>
-          article.slug === action.payload.article.slug
-            ? {
-                ...article,
-                favorited: action.payload.article.favorited,
-                favoritesCount: action.payload.article.favoritesCount,
-              }
-            : article
-        );
-      }
-    );
-
-    builder.addCase(
-      unfavoriteArticle.fulfilled,
-      (
-        state: Draft<ArticleListState>,
-        action: PayloadAction<ArticleResponse>
-      ) => {
-        state.articles = state.articles.map((article) =>
-          article.slug === action.payload.article.slug
-            ? {
-                ...article,
-                favorited: action.payload.article.favorited,
-                favoritesCount: action.payload.article.favoritesCount,
-              }
-            : article
-        );
-      }
-    );
-
-    builder.addCase(
-      getAllArticles.fulfilled,
-      (
-        state: Draft<ArticleListState>,
-        action: PayloadAction<
-          ArticlesResponse,
-          string,
-          Meta<QueryParams | undefined>
-        >
-      ) => {
-        state.articles = action.payload.articles;
-        state.articlesCount = action.payload.articlesCount;
-        state.currentPage = action.meta.arg?.page ?? 0;
-      }
-    );
-
-    builder.addCase(
-      getArticlesByTag.fulfilled,
-      (
-        _,
-        action: PayloadAction<
-          ArticlesResponse,
-          string,
-          Meta<QueryParams | undefined>
-        >
-      ) => ({
-        articles: action.payload.articles,
-        articlesCount: action.payload.articlesCount,
-        currentPage: action.meta.arg?.page ?? 0,
-        tag: action.meta.arg?.tag,
-        articlesPerPage: 10,
-      })
-    );
-
-    builder.addCase(
-      getArticlesByAuthor.fulfilled,
-      (
-        _,
-        action: PayloadAction<
-          ArticlesResponse,
-          string,
-          Meta<QueryParams | undefined>
-        >
-      ) => ({
-        articles: action.payload.articles,
-        articlesCount: action.payload.articlesCount,
-        currentPage: action.meta.arg?.page ?? 0,
-        author: action.meta.arg?.author,
-        articlesPerPage: 5,
-      })
-    );
-
-    builder.addCase(
-      getFavoriteArticles.fulfilled,
-      (
-        _,
-        action: PayloadAction<
-          ArticlesResponse,
-          string,
-          Meta<QueryParams | undefined>
-        >
-      ) => ({
-        articles: action.payload.articles,
-        articlesCount: action.payload.articlesCount,
-        currentPage: action.meta.arg?.page ?? 0,
-        favorited: action.meta.arg?.username,
-        articlesPerPage: 5,
-      })
-    );
-
-    builder.addMatcher(
-      (action) => [profilePageUnloaded.type].includes(action.type),
-      () => initialState
-    );
+    builder
+      .addCase(
+        favoriteArticle.fulfilled,
+        (state, action: PayloadAction<ArticleResponse>) => {
+          state.articles = state.articles.map((article) =>
+            article.slug === action.payload.article.slug
+              ? {
+                  ...article,
+                  favorited: action.payload.article.favorited,
+                  favoritesCount: action.payload.article.favoritesCount,
+                }
+              : article
+          );
+        }
+      )
+      .addCase(
+        unfavoriteArticle.fulfilled,
+        (state, action: PayloadAction<ArticleResponse>) => {
+          state.articles = state.articles.map((article) =>
+            article.slug === action.payload.article.slug
+              ? {
+                  ...article,
+                  favorited: action.payload.article.favorited,
+                  favoritesCount: action.payload.article.favoritesCount,
+                }
+              : article
+          );
+        }
+      )
+      .addCase(
+        getAllArticles.fulfilled,
+        (
+          state,
+          action: PayloadAction<
+            ArticlesResponse,
+            string,
+            Meta<QueryParams | undefined>
+          >
+        ) => {
+          state.articles = action.payload.articles;
+          state.articlesCount = action.payload.articlesCount;
+          state.currentPage = action.meta.arg?.page ?? 0;
+        }
+      )
+      .addCase(
+        getArticlesByTag.fulfilled,
+        (
+          _,
+          action: PayloadAction<
+            ArticlesResponse,
+            string,
+            Meta<QueryParams | undefined>
+          >
+        ) => ({
+          articles: action.payload.articles,
+          articlesCount: action.payload.articlesCount,
+          currentPage: action.meta.arg?.page ?? 0,
+          tag: action.meta.arg?.tag,
+          articlesPerPage: 10,
+        })
+      )
+      .addCase(
+        getArticlesByAuthor.fulfilled,
+        (
+          _,
+          action: PayloadAction<
+            ArticlesResponse,
+            string,
+            Meta<QueryParams | undefined>
+          >
+        ) => ({
+          articles: action.payload.articles,
+          articlesCount: action.payload.articlesCount,
+          currentPage: action.meta.arg?.page ?? 0,
+          author: action.meta.arg?.author,
+          articlesPerPage: 5,
+        })
+      )
+      .addCase(
+        getFavoriteArticles.fulfilled,
+        (
+          _,
+          action: PayloadAction<
+            ArticlesResponse,
+            string,
+            Meta<QueryParams | undefined>
+          >
+        ) => ({
+          articles: action.payload.articles,
+          articlesCount: action.payload.articlesCount,
+          currentPage: action.meta.arg?.page ?? 0,
+          favorited: action.meta.arg?.username,
+          articlesPerPage: 5,
+        })
+      )
+      .addMatcher(
+        (action) => [profilePageUnloaded.type].includes(action.type),
+        () => initialState
+      );
   },
 });
 
