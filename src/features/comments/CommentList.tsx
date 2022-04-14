@@ -1,7 +1,7 @@
 import React, { memo, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../app/store';
-import type { Comment } from '../../agent';
+import type { Comment as CommentType } from '../../agent';
 
 import {
   getCommentsForArticle,
@@ -61,7 +61,7 @@ function DeleteCommentButton({ commentId }: any): JSX.Element {
  *    }}
  * />
  */
-function Comment({ comment }: { comment: Comment }): JSX.Element {
+function Comment({ comment }: { comment: CommentType }): JSX.Element {
   const isAuthor = useAppSelector(selectIsAuthor(Number.parseInt(comment.id)));
 
   return (

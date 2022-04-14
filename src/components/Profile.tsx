@@ -13,7 +13,7 @@ import {
 } from '../reducers/profile';
 import { selectUser } from '../features/auth/authSlice';
 import { useAppDispatch, useAppSelector } from '../app/store';
-import type { Profile } from '../agent';
+import type { Profile as ProfileType } from '../agent';
 
 /**
  * Go to profile settings
@@ -94,7 +94,7 @@ function FollowUserButton({ username, following }: FollowRequest) {
  *    }}
  * />
  */
-function UserInfo({ profile }: { profile: Partial<Profile> }) {
+function UserInfo({ profile }: { profile: Partial<ProfileType> }) {
   const currentUser = useAppSelector(selectUser);
   const isCurrentUser = profile.username === currentUser?.username;
 
