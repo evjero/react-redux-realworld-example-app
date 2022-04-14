@@ -1,18 +1,21 @@
+import { Draft, PayloadAction } from '@reduxjs/toolkit';
+import { ApiError } from '../agent';
+import { AuthState } from '../features/auth/authSlice';
 /**
  * States of the slice
  * @readonly
  * @enum {string}
  */
-export const Status = {
+export enum Status {
   /** The initial state */
-  IDLE: 'idle',
+  IDLE = 'idle',
   /** The loading state */
-  LOADING: 'loading',
+  LOADING = 'loading',
   /** The success state */
-  SUCCESS: 'success',
+  SUCCESS = 'success',
   /** The error state */
-  FAILURE: 'failure',
-};
+  FAILURE = 'failure',
+}
 
 /**
  * Check if error is an ApiError
@@ -20,24 +23,21 @@ export const Status = {
  * @param {object} error
  * @returns {boolean} error is ApiError
  */
-export function isApiError(error) {
+export function isApiError(error: any): boolean {
   return typeof error === 'object' && error !== null && 'errors' in error;
 }
 
 /**
  * Set state as loading
- *
- * @param {import('@reduxjs/toolkit').Draft<AuthState>} state
  */
-export function loadingReducer(state) {
+export function loadingReducer(state: Draft<AuthState>): void {
   state.status = Status.LOADING;
 }
 
-/**
- * @param {import('@reduxjs/toolkit').Draft<AuthState>} state
- * @param {import('@reduxjs/toolkit').PayloadAction<{errors: Record<string, string[]}>} action
- */
-export function failureReducer(state, action) {
+export function failureReducer(
+  state: Draft<AuthState>,
+  action: PayloadAction<any>
+): void {
   state.status = Status.FAILURE;
   state.errors = action.payload.errors;
 }

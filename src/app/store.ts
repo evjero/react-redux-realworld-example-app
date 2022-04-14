@@ -11,7 +11,7 @@ import articlesReducer from '../reducers/articleList';
 import commonReducer from '../reducers/common';
 import profileReducer from '../reducers/profile';
 
-export function makeStore(preloadedState) {
+export function makeStore(preloadedState?: Record<string, unknown>) {
   return configureStore({
     reducer: {
       article: articleReducer,
@@ -34,5 +34,7 @@ export function makeStore(preloadedState) {
 }
 
 const store = makeStore();
+export type StoreState = ReturnType<typeof store.getState>;
+export type StoreDispatch = typeof store.dispatch;
 
 export default store;

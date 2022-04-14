@@ -3,7 +3,7 @@ import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import agent from '../agent';
 import { profilePageUnloaded } from './profile';
 
-export const changeTab = (tab) => (dispatch) => {
+export const changeTab = (tab: any) => (dispatch) => {
   dispatch(articleListSlice.actions.changeTab(tab));
   return dispatch(getAllArticles());
 };

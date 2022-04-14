@@ -1,14 +1,14 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 
 import agent from '../agent';
 
-function serializeError(error) {
+function serializeError(error: any) {
   if (error instanceof Error) {
     return {
       name: error.name,
       message: error.message,
       stack: error.stack,
-      code: error.code,
+      code: (error as any).code,
     };
   }
 
@@ -36,6 +36,12 @@ export const updateArticle = createAsyncThunk(
   { serializeError }
 );
 
+type ArticleSliceState = {
+  article?: Record<string, any>;
+  inProgress: boolean;
+  errors?: any[];
+};
+
 const initialState = {
   article: undefined,
   inProgress: false,
@@ -49,32 +55,41 @@ const articleSlice = createSlice({
     articlePageUnloaded: () => initialState,
   },
   extraReducers: (builder) => {
-    builder.addCase(getArticle.fulfilled, (state, action) => {
-      state.article = action.payload.article;
+    builder.addCase(
+      getArticle.fulfilled,
+      (state: ArticleSliceState, action) => {
+        state.article = action.payload.article;
+        state.inProgress = false;
+      }
+    );
+
+    builder.addCase(createArticle.fulfilled, (state: ArticleSliceState) => {
       state.inProgress = false;
     });
 
-    builder.addCase(createArticle.fulfilled, (state) => {
+    builder.addCase(
+      createArticle.rejected,
+      (state: ArticleSliceState, action) => {
+        state.errors = (action.error as any).errors;
+        state.inProgress = false;
+      }
+    );
+
+    builder.addCase(updateArticle.fulfilled, (state: ArticleSliceState) => {
       state.inProgress = false;
     });
 
-    builder.addCase(createArticle.rejected, (state, action) => {
-      state.errors = action.error.errors;
-      state.inProgress = false;
-    });
-
-    builder.addCase(updateArticle.fulfilled, (state) => {
-      state.inProgress = false;
-    });
-
-    builder.addCase(updateArticle.rejected, (state, action) => {
-      state.errors = action.error.errors;
-      state.inProgress = false;
-    });
+    builder.addCase(
+      updateArticle.rejected,
+      (state: ArticleSliceState, action) => {
+        state.errors = (action.error as any).errors;
+        state.inProgress = false;
+      }
+    );
 
     builder.addMatcher(
       (action) => action.type.endsWith('/pending'),
-      (state) => {
+      (state: ArticleSliceState) => {
         state.inProgress = true;
       }
     );

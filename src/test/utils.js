@@ -1,5 +1,4 @@
 import { render } from '@testing-library/react';
-// import { ConnectedRouter } from 'connected-react-router';
 import { BrowserRouter as Router } from 'react-router-dom';
 // import { createMemoryHistory } from 'history';
 import { Provider } from 'react-redux';
