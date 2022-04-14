@@ -1,5 +1,4 @@
 import React, { lazy, memo, Suspense, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { useParams } from 'react-router';
 import snarkdown from 'snarkdown';
 import xss from 'xss';
@@ -7,7 +6,7 @@ import xss from 'xss';
 import TagsList from '../../features/tags/TagsList';
 import { articlePageUnloaded, getArticle } from '../../reducers/article';
 import ArticleMeta from './ArticleMeta';
-import { RootState, useAppDispatch } from '../../app/store';
+import { RootState, useAppDispatch, useAppSelector } from '../../app/store';
 
 const CommentSection = lazy(
   () =>
@@ -16,7 +15,7 @@ const CommentSection = lazy(
     )
 );
 
-type Props = { slug: string; [property: string]: unknown };
+type Props = { [property: string]: unknown };
 
 /**
  * Show one article with its comments
@@ -24,9 +23,9 @@ type Props = { slug: string; [property: string]: unknown };
  * @example
  * <Article />
  */
-function Article({ match }: Props) {
-  const article = useSelector((state: RootState) => state.article.article);
-  const inProgress = useSelector(
+function Article({ match }: Props): JSX.Element {
+  const article = useAppSelector((state: RootState) => state.article.article);
+  const inProgress = useAppSelector(
     (state: RootState) => state.article.inProgress
   );
   const { slug } = useParams();

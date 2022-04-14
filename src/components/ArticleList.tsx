@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '../app/store';
 
 import ArticlePreview from './ArticlePreview';
 import ListPagination from './ListPagination';
@@ -10,8 +10,8 @@ import ListPagination from './ListPagination';
  * @example
  * <ArticleList />
  */
-function ArticleList() {
-  const articles = useSelector((state) => state.articleList.articles);
+function ArticleList(): JSX.Element {
+  const articles = useAppSelector((state) => state.articleList.articles);
 
   if (!articles) {
     return <div className="article-preview">Loading...</div>;

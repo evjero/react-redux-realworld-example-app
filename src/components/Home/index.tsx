@@ -1,11 +1,12 @@
 import React, { memo, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 
 import { changeTab, homePageUnloaded } from '../../reducers/articleList';
 import Banner from './Banner';
 import MainView from './MainView';
 import TagsSidebar from '../../features/tags/TagsSidebar';
 import { selectIsAuthenticated } from '../../features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '../../app/store';
 
 /**
  * Home screen component
@@ -13,16 +14,15 @@ import { selectIsAuthenticated } from '../../features/auth/authSlice';
  * @example
  * <Home />
  */
-function Home() {
-  const dispatch = useDispatch();
-  const isAuthenticated = useSelector(selectIsAuthenticated);
+function Home(): JSX.Element {
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
   useEffect(() => {
     const defaultTab = isAuthenticated ? 'feed' : 'all';
-    const fetchArticles = dispatch(changeTab(defaultTab));
+    const fetchArticles = useAppDispatch(changeTab(defaultTab));
 
     return () => {
-      dispatch(homePageUnloaded());
+      useAppDispatch(homePageUnloaded());
       fetchArticles.abort();
     };
   }, []);

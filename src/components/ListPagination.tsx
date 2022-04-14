@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../app/store';
 
 import { getAllArticles } from '../reducers/articleList';
 
@@ -9,16 +9,17 @@ import { getAllArticles } from '../reducers/articleList';
  * @example
  * <ListPagination />
  */
-function ListPagination() {
-  const dispatch = useDispatch();
-  const articlesCount = useSelector((state) => state.articleList.articlesCount);
-  const currentPage = useSelector((state) => state.articleList.currentPage);
-  const articlesPerPage = useSelector(
+function ListPagination(): JSX.Element {
+  const articlesCount = useAppSelector(
+    (state) => state.articleList.articlesCount
+  );
+  const currentPage = useAppSelector((state) => state.articleList.currentPage);
+  const articlesPerPage = useAppSelector(
     (state) => state.articleList.articlesPerPage
   );
 
   if (articlesCount <= articlesPerPage) {
-    return null;
+    return <></>;
   }
 
   const pages = Array.from(
@@ -26,8 +27,8 @@ function ListPagination() {
     (_, number) => number
   );
 
-  const handleClickPage = (page) => () => {
-    dispatch(getAllArticles({ page }));
+  const handleClickPage = (page: number) => () => {
+    useAppDispatch(getAllArticles({ page }));
   };
 
   return (

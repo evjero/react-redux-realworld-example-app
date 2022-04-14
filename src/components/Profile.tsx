@@ -1,6 +1,5 @@
 import React, { memo, useEffect } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
 import ArticleList from './ArticleList';
 import {
   getArticlesByAuthor,
@@ -13,6 +12,8 @@ import {
   profilePageUnloaded,
 } from '../reducers/profile';
 import { selectUser } from '../features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '../app/store';
+import type { Profile } from '../agent';
 
 /**
  * Go to profile settings
@@ -20,7 +21,7 @@ import { selectUser } from '../features/auth/authSlice';
  * @example
  * <EditProfileSettings />
  */
-function EditProfileSettings() {
+function EditProfileSettings(): JSX.Element {
   return (
     <Link
       to="/settings"
@@ -31,19 +32,19 @@ function EditProfileSettings() {
   );
 }
 
+type FollowRequest = {
+  username?: string;
+  following?: boolean;
+};
 /**
  * Follow or unfollow an user
  *
- * @param {Object} props
- * @param {String} props.username
- * @param {Boolean} props.following
  * @example
  * <FollowUserButton username="warren_boyd" following />
  */
-function FollowUserButton({ username, following }) {
+function FollowUserButton({ username, following }: FollowRequest) {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const currentUser = useSelector(selectUser);
+  const currentUser = useAppSelector(selectUser);
   let classes = 'btn btn-sm action-btn';
   let textMessage;
 
@@ -55,16 +56,19 @@ function FollowUserButton({ username, following }) {
     textMessage = `Follow ${username}`;
   }
 
-  const handleClick = () => {
+  const handleClick = (): void => {
     if (!currentUser) {
+      //eslint-disable-next-line
+      //@ts-ignore
       navigate.push(`/register?redirectTo=${location.pathname}`);
       return;
     }
-
-    if (following) {
-      dispatch(unfollow(username));
-    } else {
-      dispatch(follow(username));
+    if (username) {
+      if (following) {
+        useAppDispatch(unfollow(username));
+      } else {
+        useAppDispatch(follow(username));
+      }
     }
   };
 
@@ -80,8 +84,6 @@ function FollowUserButton({ username, following }) {
 /**
  * Show the profile of an user
  *
- * @param {Object} props
- * @param {Object} props.profile
  * @example
  * <UserInfo profile={{
  *      username: 'warren_boyd',
@@ -92,8 +94,8 @@ function FollowUserButton({ username, following }) {
  *    }}
  * />
  */
-function UserInfo({ profile }) {
-  const currentUser = useSelector(selectUser);
+function UserInfo({ profile }: { profile: Partial<Profile> }) {
+  const currentUser = useAppSelector(selectUser);
   const isCurrentUser = profile.username === currentUser?.username;
 
   return (
@@ -127,16 +129,17 @@ function UserInfo({ profile }) {
   );
 }
 
+type ProfileTabsProps = {
+  username?: string;
+  isFavorites?: boolean;
+};
 /**
  * Profile's navigation
  *
- * @param {Object}  props
- * @param {String}  props.username
- * @param {Boolean} props.isFavorites
  * @example
  * <ProfileTabs username="warren_boyd" isFavorites />
  */
-function ProfileTabs({ username, isFavorites }) {
+function ProfileTabs({ username, isFavorites }: ProfileTabsProps) {
   return (
     <div className="articles-toggle">
       <ul className="nav nav-pills outline-active">
@@ -162,23 +165,23 @@ function ProfileTabs({ username, isFavorites }) {
   );
 }
 
+type ProfileProps = { isFavoritePage?: boolean };
 /**
  * Profile screen component
- * @param {import('react-router-dom').RouteComponentProps<{ username: string }>} props
- * @example
+ 
+* @example
  * <Profile />
  */
-function Profile({ location, isFavoritePage }) {
-  const dispatch = useDispatch();
-  const profile = useSelector((state) => state.profile);
+function Profile({ isFavoritePage }: ProfileProps): JSX.Element {
+  const { status, ...profile } = useAppSelector((state) => state.profile);
   const { username } = useParams();
 
   useEffect(() => {
-    const fetchProfile = dispatch(getProfile(username));
-    const fetchArticles = dispatch(
+    const fetchProfile = useAppDispatch(getProfile(username!));
+    const fetchArticles = useAppDispatch(
       isFavoritePage
         ? getFavoriteArticles({ username })
-        : getArticlesByAuthor({ author: username })
+        : getArticlesByAuthor({ author: username! })
     );
 
     return () => {
@@ -187,10 +190,14 @@ function Profile({ location, isFavoritePage }) {
     };
   }, [username, isFavoritePage]);
 
-  useEffect(() => () => dispatch(profilePageUnloaded()), []);
+  useEffect(() => {
+    return () => {
+      useAppDispatch(profilePageUnloaded());
+    };
+  }, []);
 
   if (!profile) {
-    return null;
+    return <></>;
   }
 
   return (

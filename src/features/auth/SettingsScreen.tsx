@@ -1,6 +1,9 @@
 import React, { memo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
+import { AnyAction } from 'redux';
+import { UpdateUserRequest, User } from '../../agent';
+import { useAppDispatch, useAppSelector } from '../../app/store';
 
 import ListErrors from '../../components/ListErrors';
 import {
@@ -11,13 +14,13 @@ import {
   selectUser,
   updateUser,
 } from './authSlice';
-
+type SettingsFormProps = {
+  currentUser: User;
+  onSaveSettings: (user: UpdateUserRequest) => AnyAction;
+};
 /**
  * Settings form component
  *
- * @param {Object} props
- * @param {import('./authSlice').User} props.currentUser
- * @param {(user: Partial<import('./authSlice').User>) => Promise<any>} props.onSaveSettings
  * @example
  * <SettingsForm
  *    currentUser={{
@@ -26,10 +29,13 @@ import {
  *      image: 'https://static.productionready.io/images/smiley-cyrus.jpg',
  *      bio: null,
  *    }}
- *    onSaveSettings={user => dispatch(updateUser(user))}
+ *    onSaveSettings={user => useAppDispatch(updateUser(user))}
  * />
  */
-function SettingsForm({ currentUser, onSaveSettings }) {
+function SettingsForm({
+  currentUser,
+  onSaveSettings,
+}: SettingsFormProps): JSX.Element {
   const [image, setImage] = useState(
     currentUser?.image ??
       'https://static.productionready.io/images/smiley-cyrus.jpg'
@@ -38,59 +44,38 @@ function SettingsForm({ currentUser, onSaveSettings }) {
   const [bio, setBio] = useState(currentUser?.bio ?? '');
   const [email, setEmail] = useState(currentUser?.email ?? '');
   const [password, setPassword] = useState('');
-  const isLoading = useSelector(selectIsLoading);
+  const isLoading = useAppSelector(selectIsLoading);
 
-  /**
-   * @type {React.ChangeEventHandler<HTMLInputElement>}
-   */
-  const changeImage = (event) => {
+  const changeImage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setImage(event.target.value);
   };
 
-  /**
-   * @type {React.ChangeEventHandler<HTMLInputElement>}
-   */
-  const changeUsername = (event) => {
+  const changeUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(event.target.value);
   };
 
-  /**
-   * @type {React.ChangeEventHandler<HTMLInputElement>}
-   */
-  const changeBio = (event) => {
+  const changeBio = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setBio(event.target.value);
   };
 
-  /**
-   * @type {React.ChangeEventHandler<HTMLInputElement>}
-   */
-  const changeEmail = (event) => {
+  const changeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
   };
 
-  /**
-   * @type {React.ChangeEventHandler<HTMLInputElement>}
-   */
-  const changePassword = (event) => {
+  const changePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
   };
 
-  /**
-   * @type {React.FormEventHandler<HTMLFormElement>}
-   */
-  const saveSettings = (event) => {
+  const saveSettings = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    const user = {
+    const user: UpdateUserRequest = {
       image,
       username,
       bio,
       email,
+      password: password ?? undefined,
     };
-
-    if (password) {
-      user.password = password;
-    }
 
     onSaveSettings(user);
   };
@@ -171,16 +156,16 @@ function SettingsForm({ currentUser, onSaveSettings }) {
  */
 function SettingsScreen() {
   const dispatch = useDispatch();
-  const currentUser = useSelector(selectUser);
-  const errors = useSelector(selectErrors);
-  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const currentUser = useAppSelector(selectUser);
+  const errors = useAppSelector(selectErrors);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
-  const saveSettings = (user) => {
-    void dispatch(updateUser(user));
+  const saveSettings = (user: UpdateUserRequest) => {
+    return useAppDispatch(updateUser(user));
   };
 
   const logoutUser = () => {
-    dispatch(logout());
+    useAppDispatch(logout());
   };
 
   if (!isAuthenticated) {
@@ -196,10 +181,12 @@ function SettingsScreen() {
 
             <ListErrors errors={errors} />
 
-            <SettingsForm
-              currentUser={currentUser}
-              onSaveSettings={saveSettings}
-            />
+            {currentUser && (
+              <SettingsForm
+                currentUser={currentUser}
+                onSaveSettings={saveSettings}
+              />
+            )}
 
             <hr />
 

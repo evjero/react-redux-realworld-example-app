@@ -1,6 +1,7 @@
 import React, { memo, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router-dom';
+import { useAppDispatch, useAppSelector } from '../../app/store';
+import type { Comment } from '../../agent';
 
 import {
   getCommentsForArticle,
@@ -18,16 +19,15 @@ import {
  * @example
  * <DeleteCommentButton commentId={1} />
  */
-function DeleteCommentButton({ commentId }) {
-  const dispatch = useDispatch();
-  const isLoading = useSelector(selectIsLoading);
+function DeleteCommentButton({ commentId }: any): JSX.Element {
+  const isLoading = useAppSelector(selectIsLoading);
   const { slug } = useParams();
 
   /**
    * @type {React.MouseEventHandler<HTMLButtonElement>}
    */
   const deleteComment = () => {
-    dispatch(removeComment({ articleSlug: slug, commentId }));
+    useAppDispatch(removeComment({ articleSlug: slug ?? '', commentId }));
   };
 
   return (
@@ -43,9 +43,8 @@ function DeleteCommentButton({ commentId }) {
 }
 
 /**
+ * Renders a Comment
  *
- * @param {object} props
- * @param {import('../../agent').Comment} props.comment
  * @example
  * <Comment
  *    comment={{
@@ -62,8 +61,8 @@ function DeleteCommentButton({ commentId }) {
  *    }}
  * />
  */
-function Comment({ comment }) {
-  const isAuthor = useSelector(selectIsAuthor(comment.id));
+function Comment({ comment }: { comment: Comment }): JSX.Element {
+  const isAuthor = useAppSelector(selectIsAuthor(Number.parseInt(comment.id)));
 
   return (
     <div className="card" data-testid="comment">
@@ -101,14 +100,13 @@ function Comment({ comment }) {
  * @example
  * <CommentList />
  */
-function CommentList() {
-  const dispatch = useDispatch();
-  const comments = useSelector(selectAllComments);
-  const isLoading = useSelector(selectIsLoading);
+function CommentList(): JSX.Element {
+  const comments = useAppSelector(selectAllComments);
+  const isLoading = useAppSelector(selectIsLoading);
   const { slug } = useParams();
 
   useEffect(() => {
-    const fetchComments = dispatch(getCommentsForArticle(slug));
+    const fetchComments = useAppDispatch(getCommentsForArticle(slug ?? ''));
 
     return () => {
       fetchComments.abort();

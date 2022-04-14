@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { getArticlesByTag } from '../../reducers/articleList';
 import { getAllTags, selectIsLoading, selectTags } from './tagsSlice';
+import { useAppDispatch, useAppSelector } from '../../app/store';
 
 /**
  * Show all tags in the sidebar
@@ -10,13 +11,13 @@ import { getAllTags, selectIsLoading, selectTags } from './tagsSlice';
  * @example
  * <TagsSidebar />
  */
-function TagsSidebar() {
+function TagsSidebar(): JSX.Element {
   const dispatch = useDispatch();
-  const tags = useSelector(selectTags);
-  const isLoading = useSelector(selectIsLoading);
+  const tags = useAppSelector(selectTags);
+  const isLoading = useAppSelector(selectIsLoading);
 
   useEffect(() => {
-    const fetchTags = dispatch(getAllTags());
+    const fetchTags = useAppDispatch(getAllTags());
 
     return () => {
       fetchTags.abort();
@@ -29,8 +30,8 @@ function TagsSidebar() {
    * @param {String} tag
    * @returns {React.MouseEventHandler}
    */
-  const handleClickTag = (tag) => () => {
-    dispatch(getArticlesByTag({ tag }));
+  const handleClickTag = (tag: string) => () => {
+    useAppDispatch(getArticlesByTag({ tag }));
   };
 
   return (

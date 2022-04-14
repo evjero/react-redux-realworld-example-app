@@ -1,7 +1,7 @@
 import React, { memo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../../app/store';
 
 import ListErrors from '../../components/ListErrors';
 import { login, register, selectErrors, selectIsLoading } from './authSlice';
@@ -12,41 +12,33 @@ import { login, register, selectErrors, selectIsLoading } from './authSlice';
  * @example
  * <AuthScreen />
  */
-function AuthScreen({ isRegisterScreen }) {
+function AuthScreen({
+  isRegisterScreen,
+}: {
+  isRegisterScreen?: boolean;
+}): JSX.Element {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [email, setEmail] = useState('');
-  const dispatch = useDispatch();
-  const errors = useSelector(selectErrors);
-  const inProgress = useSelector(selectIsLoading);
+  const errors = useAppSelector(selectErrors);
+  const inProgress = useAppSelector(selectIsLoading);
   const navigate = useNavigate();
-  /**
-   * @type {React.ChangeEventHandler<HTMLInputElement>}
-   */
-  const changeUsername = (event) => {
+
+  const changeUsername = (event: React.ChangeEvent<HTMLInputElement>) => {
     setUsername(event.target.value);
   };
 
-  /**
-   * @type {React.ChangeEventHandler<HTMLInputElement>}
-   */
-  const changeEmail = (event) => {
+  const changeEmail = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
   };
 
-  /**
-   * @type {React.ChangeEventHandler<HTMLInputElement>}
-   */
-  const changePassword = (event) => {
+  const changePassword = (event: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(event.target.value);
   };
 
-  /**
-   * @type {React.FormEventHandler<HTMLFormElement>}
-   */
-  const authenticateUser = (event) => {
+  const authenticateUser = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(
+    useAppDispatch(
       isRegisterScreen
         ? register({ username, email, password })
         : login({ email, password })

@@ -23,13 +23,13 @@ export const changeTab = (tab: any) => (dispatch: ThunkActionDispatch<any>) => {
 
 type ArticlesByAuthorRequest = {
   author: string;
-  page: number;
+  page?: number;
 };
 
 export const getArticlesByAuthor = createAsyncThunk(
   'articleList/getArticlesByAuthor',
   ({ author, page }: ArticlesByAuthorRequest) =>
-    agent.Articles.byAuthor(author, page)
+    agent.Articles.byAuthor(author, page ?? 0)
 );
 
 export const getAllArticles = createAsyncThunk<

@@ -1,9 +1,9 @@
 import React, { memo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
 
 import ArticleList from '../ArticleList';
 import { changeTab } from '../../reducers/articleList';
 import { selectIsAuthenticated } from '../../features/auth/authSlice';
+import { useAppDispatch, useAppSelector } from '../../app/store';
 
 /**
  * Your feed tab
@@ -11,18 +11,17 @@ import { selectIsAuthenticated } from '../../features/auth/authSlice';
  * @example
  * <YourFeedTab />
  */
-function YourFeedTab() {
-  const dispatch = useDispatch();
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const currentTab = useSelector((state) => state.articleList.tab);
+function YourFeedTab(): JSX.Element {
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const currentTab = useAppSelector((state) => state.articleList.tab);
   const isActiveTab = currentTab === 'feed';
 
   if (!isAuthenticated) {
-    return null;
+    return <></>;
   }
 
   const dispatchChangeTab = () => {
-    dispatch(changeTab('feed'));
+    useAppDispatch(changeTab('feed'));
   };
 
   return (
@@ -44,9 +43,8 @@ function YourFeedTab() {
  * @example
  * <GlobalFeedTab />
  */
-function GlobalFeedTab() {
-  const dispatch = useDispatch();
-  const currentTab = useSelector((state) => state.articleList.tab);
+function GlobalFeedTab(): JSX.Element {
+  const currentTab = useAppSelector((state) => state.articleList.tab);
   const isActiveTab = currentTab === 'all';
 
   /**
@@ -54,7 +52,7 @@ function GlobalFeedTab() {
    * @type{React.MouseEventHandler}
    */
   const dispatchChangeTab = () => {
-    dispatch(changeTab('all'));
+    useAppDispatch(changeTab('all'));
   };
 
   return (
@@ -76,11 +74,11 @@ function GlobalFeedTab() {
  * @example
  * <TagFilterTab />
  */
-function TagFilterTab() {
-  const tag = useSelector((state) => state.articleList.tag);
+function TagFilterTab(): JSX.Element {
+  const tag = useAppSelector((state) => state.articleList.tag);
 
   if (!tag) {
-    return null;
+    return <></>;
   }
 
   return (
@@ -98,7 +96,7 @@ function TagFilterTab() {
  * @example
  * <MainView />
  */
-function MainView() {
+function MainView(): JSX.Element {
   return (
     <div className="col-md-9">
       <div className="feed-toggle">

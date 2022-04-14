@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '../app/store';
 
 import { selectIsAuthenticated, selectUser } from '../features/auth/authSlice';
 
@@ -10,7 +10,7 @@ import { selectIsAuthenticated, selectUser } from '../features/auth/authSlice';
  * @example
  * <LoggedOutNavbar />
  */
-function LoggedOutNavbar() {
+function LoggedOutNavbar(): JSX.Element {
   return (
     <ul className="nav navbar-nav pull-xs-right">
       <li className="nav-item">
@@ -40,8 +40,8 @@ function LoggedOutNavbar() {
  * @example
  * <LoggedInNavbar />
  */
-function LoggedInNavbar() {
-  const currentUser = useSelector(selectUser);
+function LoggedInNavbar(): JSX.Element {
+  const currentUser = useAppSelector(selectUser);
 
   return (
     <ul className="nav navbar-nav pull-xs-right">
@@ -88,9 +88,9 @@ function LoggedInNavbar() {
  * @example
  * <Header />
  */
-function Header() {
-  const isAuthenticated = useSelector(selectIsAuthenticated);
-  const appName = useSelector((state) => state.common.appName);
+function Header(): JSX.Element {
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const appName = useAppSelector((state) => state.common.appName);
 
   return (
     <nav className="navbar navbar-light">

@@ -9,10 +9,11 @@ import agent, { Profile, ProfileResponse } from '../agent';
 import { Status, StatusType } from '../common/utils';
 import type { AsyncThunkOptions, RootState } from '../app/store';
 
-export const getProfile = createAsyncThunk(
-  'profile/getProfile',
-  agent.Profile.get
-);
+export const getProfile = createAsyncThunk<
+  ProfileResponse,
+  string,
+  AsyncThunkOptions
+>('profile/getProfile', agent.Profile.get);
 
 export const follow = createAsyncThunk<
   ProfileResponse,

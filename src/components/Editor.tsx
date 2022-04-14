@@ -1,5 +1,5 @@
 import React, { useState, useEffect, memo } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../app/store';
 
 import ListErrors from './ListErrors';
 import {
@@ -9,55 +9,46 @@ import {
   articlePageUnloaded,
 } from '../reducers/article';
 import { useNavigate, useParams } from 'react-router';
+import { Article } from '../agent';
 
 /**
  * Editor component
- * @param {import('react-router-dom').RouteComponentProps<{ slug?: string }>} props
+ *
  * @example
  * <Editor />
  */
-function Editor({ match }) {
-  const dispatch = useDispatch();
-  const { article, errors, inProgress } = useSelector((state) => state.article);
+function Editor(): JSX.Element {
+  const { article, errors, inProgress } = useAppSelector(
+    (state) => state.article
+  );
   const { slug } = useParams();
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [body, setBody] = useState('');
   const [tagInput, setTagInput] = useState('');
-  const [tagList, setTagList] = useState([]);
+  const [tagList, setTagList] = useState<string[]>([]);
   const navigate = useNavigate();
-  /**
-   * @type {React.ChangeEventHandler<HTMLInputElement>}
-   */
-  const changeTitle = (event) => {
+
+  const changeTitle = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTitle(event.target.value);
   };
 
-  /**
-   * @type {React.ChangeEventHandler<HTMLInputElement>}
-   */
-  const changeDescription = (event) => {
+  const changeDescription = (event: React.ChangeEvent<HTMLInputElement>) => {
     setDescription(event.target.value);
   };
 
-  /**
-   * @type {React.ChangeEventHandler<HTMLAreaElement>}
-   */
-  const changeBody = (event) => {
+  const changeBody = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setBody(event.target.value);
   };
 
-  /**
-   * @type {React.ChangeEventHandler<HTMLInputElement>}
-   */
-  const changeTagInput = (event) => {
+  const changeTagInput = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTagInput(event.target.value);
   };
 
   /**
    * Reset the form values
    */
-  const reset = () => {
+  const reset = (): void => {
     if (slug && article) {
       setTitle(article.title);
       setDescription(article.description);
@@ -72,11 +63,7 @@ function Editor({ match }) {
     }
   };
 
-  /**
-   * Add a tag to tagList
-   * @type {React.KeyboardEventHandler<HTMLInputElement>}
-   */
-  const addTag = (event) => {
+  const addTag = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
       event.preventDefault();
 
@@ -90,19 +77,15 @@ function Editor({ match }) {
   /**
    * Remove a tag from tagList
    *
-   * @param {String} tag
    * @returns {React.MouseEventHandler}
    */
-  const removeTag = (tag) => () => {
+  const removeTag = (tag: string) => () => {
     setTagList(tagList.filter((_tag) => _tag !== tag));
   };
 
-  /**
-   * @type {React.MouseEventHandler<HTMLButtonElement>}
-   */
-  const submitForm = (event) => {
+  const submitForm = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
-    const article = {
+    const article: Partial<Article> = {
       slug,
       title,
       description,
@@ -110,20 +93,24 @@ function Editor({ match }) {
       tagList,
     };
 
-    dispatch(slug ? updateArticle(article) : createArticle(article));
+    useAppDispatch(slug ? updateArticle(article) : createArticle(article));
     navigate('/');
   };
 
   useEffect(() => {
     reset();
     if (slug) {
-      dispatch(getArticle(slug));
+      useAppDispatch(getArticle(slug));
     }
   }, [slug]);
 
   useEffect(reset, [article]);
 
-  useEffect(() => () => dispatch(articlePageUnloaded()), []);
+  useEffect(() => {
+    return () => {
+      useAppDispatch(articlePageUnloaded());
+    };
+  }, []);
 
   return (
     <div className="editor-page">
@@ -157,7 +144,7 @@ function Editor({ match }) {
                 <fieldset className="form-group">
                   <textarea
                     className="form-control"
-                    rows="8"
+                    rows={8}
                     placeholder="Write your article (in markdown)"
                     value={body}
                     onChange={changeBody}

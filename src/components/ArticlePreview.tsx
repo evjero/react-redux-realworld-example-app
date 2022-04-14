@@ -1,9 +1,10 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useAppDispatch } from '../app/store';
 
 import { favoriteArticle, unfavoriteArticle } from '../reducers/articleList';
 import TagsList from '../features/tags/TagsList';
+import { Article } from '../agent';
 
 const FAVORITED_CLASS = 'btn btn-sm btn-primary';
 const NOT_FAVORITED_CLASS = 'btn btn-sm btn-outline-primary';
@@ -11,8 +12,6 @@ const NOT_FAVORITED_CLASS = 'btn btn-sm btn-outline-primary';
 /**
  * Show a preview of an article
  *
- * @param {Object} props
- * @param {Object} props.article
  * @example
  * <ArticlePreview
  *    article={{
@@ -34,19 +33,18 @@ const NOT_FAVORITED_CLASS = 'btn btn-sm btn-outline-primary';
  *    }}
  * />
  */
-function ArticlePreview({ article }) {
-  const dispatch = useDispatch();
+function ArticlePreview({ article }: { article: Article }) {
   const favoriteButtonClass = article.favorited
     ? FAVORITED_CLASS
     : NOT_FAVORITED_CLASS;
 
-  const handleClick = (event) => {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.preventDefault();
 
     if (article.favorited) {
-      dispatch(unfavoriteArticle(article.slug));
+      useAppDispatch(unfavoriteArticle(article.slug));
     } else {
-      dispatch(favoriteArticle(article.slug));
+      useAppDispatch(favoriteArticle(article.slug));
     }
   };
 

@@ -1,10 +1,9 @@
 import React, { memo } from 'react';
+import type { ApiError } from '../agent';
 
 /**
  * List errors component
  *
- * @param {Object} props
- * @param {{[property: string]: string[]]}} [props.errors]
  * @example
  * <ListErrors errors={{
  *    email: ["can't be blank"],
@@ -15,9 +14,9 @@ import React, { memo } from 'react';
  *    ],
  * }} />
  */
-function ListErrors({ errors }) {
+function ListErrors({ errors }: ApiError): JSX.Element {
   if (!errors || Object.keys(errors).length === 0) {
-    return null;
+    return <></>;
   }
 
   const errorMessages = Object.entries(errors).flatMap(([property, messages]) =>

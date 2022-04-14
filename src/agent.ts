@@ -32,13 +32,12 @@ export type User = {
   bio: string;
   image: string;
   token: string;
+  password: string;
 };
 export type UserAuth = {
   user: User;
 };
-export interface UpdateUserRequest extends Omit<User, 'token'> {
-  password: string;
-}
+export type UpdateUserRequest = Omit<User, 'token'>;
 export type Profile = {
   following: boolean;
 } & Pick<User, 'username' | 'bio' | 'image'>;
@@ -289,7 +288,7 @@ const Articles = {
   /**
    * Create a new article
    */
-  create: (article: Article): Promise<ArticleResponse> =>
+  create: (article: Partial<Article>): Promise<ArticleResponse> =>
     requests.post('/articles', { article }),
 };
 

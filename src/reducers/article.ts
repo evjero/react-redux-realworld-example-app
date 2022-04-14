@@ -28,7 +28,7 @@ export const getArticle = createAsyncThunk<
 
 export const createArticle = createAsyncThunk<
   ArticleResponse,
-  Article,
+  Partial<Article>,
   AsyncThunkOptions
 >('article/createArticle', agent.Articles.create, { serializeError });
 

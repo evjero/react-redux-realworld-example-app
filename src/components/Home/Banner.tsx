@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { useSelector } from 'react-redux';
+import { useAppSelector } from '../../app/store';
 
 import { selectIsAuthenticated } from '../../features/auth/authSlice';
 
@@ -9,12 +9,12 @@ import { selectIsAuthenticated } from '../../features/auth/authSlice';
  * @example
  * <Banner />
  */
-function Banner() {
-  const appName = useSelector((state) => state.common.appName);
-  const isAuthenticated = useSelector(selectIsAuthenticated);
+function Banner(): JSX.Element {
+  const appName = useAppSelector((state) => state.common.appName);
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
 
-  if (isAuthenticated) {
-    return null;
+  if (!isAuthenticated) {
+    return <></>;
   }
 
   return (

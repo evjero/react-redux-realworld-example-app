@@ -6,6 +6,7 @@ import ListErrors from '../../components/ListErrors';
 import { selectIsAuthenticated, selectUser } from '../auth/authSlice';
 import CommentList from './CommentList';
 import { createComment, selectErrors } from './commentsSlice';
+import { useAppDispatch, useAppSelector } from '../../app/store';
 
 /**
  * Add comment
@@ -13,25 +14,20 @@ import { createComment, selectErrors } from './commentsSlice';
  * @example
  * <CommentForm />
  */
-function CommentForm() {
-  const dispatch = useDispatch();
-  const currentUser = useSelector(selectUser);
+function CommentForm(): JSX.Element {
+  const currentUser = useAppSelector(selectUser);
   const { slug } = useParams();
   const [body, setBody] = useState('');
 
-  /**
-   * @type {React.ChangeEventHandler<HTMLTextAreaElement>}
-   */
-  const changeBody = (event) => {
+  const changeBody = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setBody(event.target.value);
   };
 
-  /**
-   * @type {React.FormEventHandler<HTMLFormElement>}
-   */
-  const saveComment = (event) => {
+  const saveComment = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    dispatch(createComment({ articleSlug: slug, comment: { body } }));
+    useAppDispatch(
+      createComment({ articleSlug: slug ?? '', comment: { body } })
+    );
     setBody('');
   };
 
@@ -50,9 +46,9 @@ function CommentForm() {
       <div className="card-footer">
         <img
           className="comment-author-img"
-          alt={currentUser.username}
+          alt={currentUser?.username}
           src={
-            currentUser.image ??
+            (currentUser && currentUser.image) ??
             'https://static.productionready.io/images/smiley-cyrus.jpg'
           }
         />
@@ -71,8 +67,8 @@ function CommentForm() {
  * <CommentSection />
  */
 function CommentSection() {
-  const isAuthenticaded = useSelector(selectIsAuthenticated);
-  const errors = useSelector(selectErrors);
+  const isAuthenticaded = useAppSelector(selectIsAuthenticated);
+  const errors = useAppSelector(selectErrors);
 
   return (
     <div className="row">
