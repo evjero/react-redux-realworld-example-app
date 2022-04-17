@@ -1,5 +1,4 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import type { AsyncThunkOptions, RootState } from '../app/store';
 
 import agent, { ApiError, Article, ArticleResponse } from '../agent';
 
@@ -20,30 +19,27 @@ function serializeError(error: any) {
   return { message: String(error) };
 }
 
-export const getArticle = createAsyncThunk<
-  ArticleResponse,
-  string,
-  AsyncThunkOptions
->('article/getArticle', agent.Articles.get);
+export const getArticle = createAsyncThunk<ArticleResponse, string>(
+  'article/getArticle',
+  agent.Articles.get
+);
 
 export const createArticle = createAsyncThunk<
   ArticleResponse,
-  Partial<Article>,
-  AsyncThunkOptions
+  Partial<Article>
 >('article/createArticle', agent.Articles.create, { serializeError });
 
 export const updateArticle = createAsyncThunk<
   ArticleResponse,
-  Partial<Article>,
-  AsyncThunkOptions
+  Partial<Article>
 >('article/updateArticle', agent.Articles.update, { serializeError });
 
-interface ArticleSliceState extends ApiError {
+interface ArticleState extends ApiError {
   article?: Article;
   inProgress: boolean;
 }
 
-const initialState: ArticleSliceState = {
+const initialState: ArticleState = {
   article: undefined,
   inProgress: false,
   errors: undefined,
@@ -51,7 +47,7 @@ const initialState: ArticleSliceState = {
 
 const articleSlice = createSlice({
   name: 'article',
-  initialState: initialState as ArticleSliceState,
+  initialState: initialState as ArticleState,
   reducers: {
     articlePageUnloaded: () => initialState,
   },

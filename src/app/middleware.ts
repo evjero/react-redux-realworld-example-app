@@ -1,9 +1,9 @@
 import { Dispatch } from 'react';
-import { AnyAction, Middleware, Store } from 'redux';
+import { AnyAction, Middleware } from 'redux';
 import agent from '../agent';
 import { login, logout, register } from '../features/auth/authSlice';
 
-const localStorageMiddleware: Middleware =
+export const localStorageMiddleware: Middleware =
   (_store) => (next: Dispatch<AnyAction>) => (action: AnyAction) => {
     switch (action.type) {
       case register.fulfilled.type:
@@ -24,5 +24,3 @@ const localStorageMiddleware: Middleware =
 
     return next(action);
   };
-
-export { localStorageMiddleware };

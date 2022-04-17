@@ -7,7 +7,7 @@ import {
 
 import agent from '../../agent';
 import { Status, StatusType } from '../../common/utils';
-import type { AsyncThunkOptions, RootState } from '../../app/store';
+import type { RootState } from '../../app/store';
 
 export type TagsState = {
   status: StatusType;
@@ -17,7 +17,7 @@ export type TagsState = {
 /**
  * Fetch all tags
  */
-export const getAllTags = createAsyncThunk<string[], void, AsyncThunkOptions>(
+export const getAllTags = createAsyncThunk<string[], void>(
   'tags/getAllTags',
   async () => {
     const { tags } = await agent.Tags.getAll();

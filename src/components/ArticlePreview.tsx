@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppDispatch } from '../app/store';
+import { useAppDispatch } from '../app/hooks';
 
 import { favoriteArticle, unfavoriteArticle } from '../reducers/articleList';
 import TagsList from '../features/tags/TagsList';

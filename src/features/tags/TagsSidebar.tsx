@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 
 import { getArticlesByTag } from '../../reducers/articleList';
 import { getAllTags, selectIsLoading, selectTags } from './tagsSlice';
-import { useAppDispatch, useAppSelector } from '../../app/store';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 
 /**
  * Show all tags in the sidebar

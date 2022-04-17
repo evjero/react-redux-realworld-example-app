@@ -6,7 +6,7 @@ import ListErrors from '../../components/ListErrors';
 import { selectIsAuthenticated, selectUser } from '../auth/authSlice';
 import CommentList from './CommentList';
 import { createComment, selectErrors } from './commentsSlice';
-import { useAppDispatch, useAppSelector } from '../../app/store';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 
 /**
  * Add comment

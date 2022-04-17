@@ -18,7 +18,7 @@ import {
 } from '../../common/utils';
 import { selectIsAuthenticated, selectUser } from '../auth/authSlice';
 import type { Comment } from '../../agent';
-import type { AsyncThunkOptions, RootState } from '../../app/store';
+import type { RootState } from '../../app/store';
 
 export interface CommentsState extends ApiError {
   status: StatusType;
@@ -47,7 +47,7 @@ type CreateCommentRequest = {
 export const createComment = createAsyncThunk<
   Comment,
   CreateCommentRequest,
-  AsyncThunkOptions
+  { state: RootState }
 >(
   'comments/createComment',
   async ({ articleSlug, comment: newComment }, thunkApi) => {
@@ -64,9 +64,12 @@ export const createComment = createAsyncThunk<
     }
   },
   {
-    condition: (_, { getState }) =>
-      selectIsAuthenticated(getState()) && !selectIsLoading(getState()),
-    getPendingMeta: (_, { getState }) => ({ author: selectUser(getState()) }),
+    condition: (_, thunkApi) =>
+      selectIsAuthenticated(thunkApi.getState()) &&
+      !selectIsLoading(thunkApi.getState()),
+    getPendingMeta: (_, thunkApi) => ({
+      author: selectUser(thunkApi.getState()),
+    }),
   }
 );
 
@@ -78,7 +81,7 @@ export const createComment = createAsyncThunk<
 export const getCommentsForArticle = createAsyncThunk<
   Comment[],
   string,
-  AsyncThunkOptions
+  { state: RootState }
 >(
   'comments/getCommentsForArticle',
   async (articleSlug: string) => {
@@ -87,7 +90,7 @@ export const getCommentsForArticle = createAsyncThunk<
     return comments;
   },
   {
-    condition: (_, { getState }) => !selectIsLoading(getState()),
+    condition: (_, thunkApi) => !selectIsLoading(thunkApi.getState()),
   }
 );
 
@@ -102,17 +105,17 @@ type RemoveCommentRequest = {
 export const removeComment = createAsyncThunk<
   void,
   RemoveCommentRequest,
-  AsyncThunkOptions
+  { state: RootState }
 >(
   'comments/removeComment',
   async ({ articleSlug, commentId }) => {
     await agent.Comments.delete(articleSlug, commentId);
   },
   {
-    condition: ({ commentId }, { getState }) =>
-      selectIsAuthenticated(getState()) &&
-      selectCommentsSlice(getState()).ids.includes(commentId) &&
-      !selectIsLoading(getState()),
+    condition: ({ commentId }, thunkApi) =>
+      selectIsAuthenticated(thunkApi.getState()) &&
+      selectCommentsSlice(thunkApi.getState()).ids.includes(commentId) &&
+      !selectIsLoading(thunkApi.getState()),
   }
 );
 

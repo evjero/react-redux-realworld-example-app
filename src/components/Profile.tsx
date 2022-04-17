@@ -12,7 +12,7 @@ import {
   profilePageUnloaded,
 } from '../reducers/profile';
 import { selectUser } from '../features/auth/authSlice';
-import { useAppDispatch, useAppSelector } from '../app/store';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
 import type { Profile as ProfileType } from '../agent';
 
 /**

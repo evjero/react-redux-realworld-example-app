@@ -1,6 +1,6 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { useAppSelector } from '../app/store';
+import { useAppSelector } from '../app/hooks';
 
 import { selectIsAuthenticated, selectUser } from '../features/auth/authSlice';
 

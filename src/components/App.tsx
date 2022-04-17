@@ -1,6 +1,6 @@
 import React, { lazy, Suspense, useEffect, memo } from 'react';
 import { Route, Routes } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../app/store';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
 
 import Home from '../components/Home';
 import { appLoad, clearRedirect } from '../reducers/common';
@@ -43,7 +43,6 @@ function App(): JSX.Element {
 
   useEffect(() => {
     if (redirectTo) {
-      // useAppDispatch(push(redirectTo));
       useAppDispatch(clearRedirect());
     }
   }, [redirectTo]);

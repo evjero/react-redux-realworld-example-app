@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { useAppSelector } from '../app/store';
+import { useAppSelector } from '../app/hooks';
 
 import ArticlePreview from './ArticlePreview';
 import ListPagination from './ListPagination';

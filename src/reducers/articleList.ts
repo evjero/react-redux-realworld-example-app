@@ -13,7 +13,6 @@ import agent, {
   Meta,
   QueryParams,
 } from '../agent';
-import type { AsyncThunkOptions, RootState } from '../app/store';
 import { profilePageUnloaded } from './profile';
 
 export const changeTab = (tab: any) => (dispatch: ThunkActionDispatch<any>) => {
@@ -32,49 +31,41 @@ export const getArticlesByAuthor = createAsyncThunk(
     agent.Articles.byAuthor(author, page ?? 0)
 );
 
-export const getAllArticles = createAsyncThunk<
-  ArticlesResponse,
-  QueryParams,
-  AsyncThunkOptions
->('articleList/getAll', ({ page, author, tag, favorited }, thunkApi: any) =>
-  thunkApi.getState().articleList.tab === 'feed'
-    ? agent.Articles.feed(page ?? 0)
-    : agent.Articles.all({
-        page: page ?? thunkApi.getState().articleList.currentPage,
-        author: author ?? thunkApi.getState().articleList.author,
-        tag: tag ?? thunkApi.getState().articleList.tag,
-        favorited: favorited ?? thunkApi.getState().articleList.favorited,
-        limit: thunkApi.getState().articleList.articlesPerPage ?? 10,
-      })
+export const getAllArticles = createAsyncThunk<ArticlesResponse, QueryParams>(
+  'articleList/getAll',
+  ({ page, author, tag, favorited }, thunkApi: any) =>
+    thunkApi.getState().articleList.tab === 'feed'
+      ? agent.Articles.feed(page ?? 0)
+      : agent.Articles.all({
+          page: page ?? thunkApi.getState().articleList.currentPage,
+          author: author ?? thunkApi.getState().articleList.author,
+          tag: tag ?? thunkApi.getState().articleList.tag,
+          favorited: favorited ?? thunkApi.getState().articleList.favorited,
+          limit: thunkApi.getState().articleList.articlesPerPage ?? 10,
+        })
 );
 
-export const getArticlesByTag = createAsyncThunk<
-  ArticlesResponse,
-  QueryParams,
-  AsyncThunkOptions
->('articleList/getArticlesByTag', ({ tag, page }) =>
-  agent.Articles.byTag(tag ?? '', page ?? 0)
+export const getArticlesByTag = createAsyncThunk<ArticlesResponse, QueryParams>(
+  'articleList/getArticlesByTag',
+  ({ tag, page }) => agent.Articles.byTag(tag ?? '', page ?? 0)
 );
 
 export const getFavoriteArticles = createAsyncThunk<
   ArticlesResponse,
-  Partial<{ username: string; page: number }>,
-  AsyncThunkOptions
+  Partial<{ username: string; page: number }>
 >('articleList/getFavoriteArticles', ({ username, page }) =>
   agent.Articles.favoritedBy(username ?? '', page ?? 0)
 );
 
-export const favoriteArticle = createAsyncThunk<
-  ArticleResponse,
-  string,
-  AsyncThunkOptions
->('articleList/favoriteArticle', agent.Articles.favorite);
+export const favoriteArticle = createAsyncThunk<ArticleResponse, string>(
+  'articleList/favoriteArticle',
+  agent.Articles.favorite
+);
 
-export const unfavoriteArticle = createAsyncThunk<
-  ArticleResponse,
-  string,
-  AsyncThunkOptions
->('articleList/unfavoriteArticle', agent.Articles.unfavorite);
+export const unfavoriteArticle = createAsyncThunk<ArticleResponse, string>(
+  'articleList/unfavoriteArticle',
+  agent.Articles.unfavorite
+);
 
 type ArticleListState = {
   articles: Article[];

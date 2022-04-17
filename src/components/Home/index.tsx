@@ -6,7 +6,7 @@ import Banner from './Banner';
 import MainView from './MainView';
 import TagsSidebar from '../../features/tags/TagsSidebar';
 import { selectIsAuthenticated } from '../../features/auth/authSlice';
-import { useAppDispatch, useAppSelector } from '../../app/store';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 
 /**
  * Home screen component

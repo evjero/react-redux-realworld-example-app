@@ -13,9 +13,8 @@ import {
   updateUser,
 } from '../features/auth/authSlice';
 import { ThunkActionDispatch } from 'redux-thunk';
-import type { AsyncThunkOptions, RootState } from '../app/store';
 
-export const deleteArticle = createAsyncThunk<void, string, AsyncThunkOptions>(
+export const deleteArticle = createAsyncThunk<void, string>(
   'common/deleteArticle',
   agent.Articles.del
 );

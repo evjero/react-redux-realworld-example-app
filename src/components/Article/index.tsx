@@ -6,7 +6,8 @@ import xss from 'xss';
 import TagsList from '../../features/tags/TagsList';
 import { articlePageUnloaded, getArticle } from '../../reducers/article';
 import ArticleMeta from './ArticleMeta';
-import { RootState, useAppDispatch, useAppSelector } from '../../app/store';
+import type { RootState } from '../../app/store';
+import { useAppSelector, useAppDispatch } from '../../app/hooks';
 
 const CommentSection = lazy(
   () =>

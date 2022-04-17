@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
-import { RootState, useAppSelector } from '../../app/store';
+import type { RootState } from '../../app/store';
+import { useAppSelector } from '../../app/hooks';
 import { selectUser } from '../../features/auth/authSlice';
 
 import ArticleActions from './ArticleActions';

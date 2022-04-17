@@ -1,6 +1,6 @@
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import React, { memo } from 'react';
-import { useAppDispatch } from '../../app/store';
+import { useAppDispatch } from '../../app/hooks';
 
 import { deleteArticle } from '../../reducers/common';
 

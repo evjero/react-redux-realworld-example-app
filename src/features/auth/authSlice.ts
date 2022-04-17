@@ -1,4 +1,5 @@
 import {
+  AsyncThunkOptions,
   createAsyncThunk,
   createSelector,
   createSlice,
@@ -13,7 +14,7 @@ import {
   Status,
   StatusType,
 } from '../../common/utils';
-import type { RootState, AsyncThunkOptions } from '../../app/store';
+import type { RootState } from '../../app/store';
 
 export interface AuthState extends ApiError {
   status: StatusType;
@@ -35,7 +36,7 @@ type LoginRequest = {
 export const register = createAsyncThunk<
   User,
   RegistrationRequest,
-  AsyncThunkOptions
+  { state: RootState }
 >(
   'auth/register',
   async ({ username, email, password }: RegistrationRequest, thunkApi) => {
@@ -51,20 +52,20 @@ export const register = createAsyncThunk<
     }
   },
   {
-    condition: (_, { getState }) => !selectIsLoading(getState()),
+    condition: (_, thunkApi) => !selectIsLoading(thunkApi.getState()),
   }
 );
 /**
  * Send a login request
  */
-export const login = createAsyncThunk<User, LoginRequest, AsyncThunkOptions>(
+export const login = createAsyncThunk<User, LoginRequest, { state: RootState }>(
   'auth/login',
   async ({ email, password }: LoginRequest, thunkApi) => {
     try {
       const { user } = await agent.Auth.login(email, password);
 
       return user;
-    } catch (error) {
+    } catch (error: any) {
       if (isApiError(error)) {
         return thunkApi.rejectWithValue(error);
       }
@@ -73,14 +74,14 @@ export const login = createAsyncThunk<User, LoginRequest, AsyncThunkOptions>(
     }
   },
   {
-    condition: (_, { getState }) => !selectIsLoading(getState()),
+    condition: (_, thunkApi) => !selectIsLoading(thunkApi.getState()),
   }
 );
 
 /**
  * Send a get current user request
  */
-export const getUser = createAsyncThunk<User, void, AsyncThunkOptions>(
+export const getUser = createAsyncThunk<User, void, { state: RootState }>(
   'auth/getUser',
   async () => {
     const { user } = await agent.Auth.current();
@@ -88,7 +89,8 @@ export const getUser = createAsyncThunk<User, void, AsyncThunkOptions>(
     return user;
   },
   {
-    condition: (_, { getState }) => Boolean(selectAuthSlice(getState()).token),
+    condition: (_, thunkApi) =>
+      Boolean(selectAuthSlice(thunkApi.getState()).token),
   }
 );
 
@@ -98,7 +100,7 @@ export const getUser = createAsyncThunk<User, void, AsyncThunkOptions>(
 export const updateUser = createAsyncThunk<
   User,
   UpdateUserRequest,
-  AsyncThunkOptions
+  { state: RootState }
 >(
   'auth/updateUser',
   async (
@@ -124,8 +126,9 @@ export const updateUser = createAsyncThunk<
     }
   },
   {
-    condition: (_, { getState }) =>
-      selectIsAuthenticated(getState()) && !selectIsLoading(getState()),
+    condition: (_, thunkApi) =>
+      selectIsAuthenticated(thunkApi.getState()) &&
+      !selectIsLoading(thunkApi.getState()),
   }
 );
 

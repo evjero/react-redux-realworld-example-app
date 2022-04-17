@@ -3,7 +3,7 @@ import React, { memo } from 'react';
 import ArticleList from '../ArticleList';
 import { changeTab } from '../../reducers/articleList';
 import { selectIsAuthenticated } from '../../features/auth/authSlice';
-import { useAppDispatch, useAppSelector } from '../../app/store';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 
 /**
  * Your feed tab

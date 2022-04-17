@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import { AnyAction } from 'redux';
 import { UpdateUserRequest, User } from '../../agent';
-import { useAppDispatch, useAppSelector } from '../../app/store';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 
 import ListErrors from '../../components/ListErrors';
 import {
@@ -16,7 +16,7 @@ import {
 } from './authSlice';
 type SettingsFormProps = {
   currentUser: User;
-  onSaveSettings: (user: UpdateUserRequest) => AnyAction;
+  onSaveSettings: (user: UpdateUserRequest) => Promise<AnyAction>;
 };
 /**
  * Settings form component

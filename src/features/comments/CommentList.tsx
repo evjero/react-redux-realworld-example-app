@@ -1,6 +1,6 @@
 import React, { memo, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useAppDispatch, useAppSelector } from '../../app/store';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import type { Comment as CommentType } from '../../agent';
 
 import {

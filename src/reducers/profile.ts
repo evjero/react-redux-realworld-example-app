@@ -7,25 +7,21 @@ import {
 
 import agent, { Profile, ProfileResponse } from '../agent';
 import { Status, StatusType } from '../common/utils';
-import type { AsyncThunkOptions, RootState } from '../app/store';
 
-export const getProfile = createAsyncThunk<
-  ProfileResponse,
-  string,
-  AsyncThunkOptions
->('profile/getProfile', agent.Profile.get);
+export const getProfile = createAsyncThunk<ProfileResponse, string>(
+  'profile/getProfile',
+  agent.Profile.get
+);
 
-export const follow = createAsyncThunk<
-  ProfileResponse,
-  string,
-  AsyncThunkOptions
->('profile/follow', agent.Profile.follow);
+export const follow = createAsyncThunk<ProfileResponse, string>(
+  'profile/follow',
+  agent.Profile.follow
+);
 
-export const unfollow = createAsyncThunk<
-  ProfileResponse,
-  string,
-  AsyncThunkOptions
->('profile/unfollow', agent.Profile.unfollow);
+export const unfollow = createAsyncThunk<ProfileResponse, string>(
+  'profile/unfollow',
+  agent.Profile.unfollow
+);
 
 type ProfileState = {
   status: StatusType;
